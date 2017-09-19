@@ -1,7 +1,7 @@
 # CekaPlus
 Crowd Environment and its Knowledge Analysis - Plus
 
-##Input Files
+## Input Files
 
 -**.gold** file: the file containing the ground truth for performance evaluation
 
