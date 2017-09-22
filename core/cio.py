@@ -93,8 +93,11 @@ def load_file(resp_path, gold_path = None):
             label.worker_id = worker.id
             worker.add_label(label)
         label.val = label_val
-
+        inst.add_noisy_label(label)
+        
     resp_file.close()
+    return dataset
+
 
 def save_file(dataset, resp_path, gold_path = None):
     """

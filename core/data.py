@@ -44,6 +44,14 @@ class Label:
                 return k
         return cls.INVALID_ID
 
+    @classmethod
+    def get_label_val_num(cls, label_id = 1):
+        return len(cls._val_name_dicts[label_id])
+
+    @classmethod
+    def get_label_id_num(cls):
+        return len(cls._id_name_dict)
+
     def __init__(self, id = 0):
         self.id = id
         self.val = 0
@@ -101,6 +109,7 @@ class Worker:
             list.append(v)
         return list
 
+
 class Instance:
     """
     The base class of instance
@@ -129,6 +138,8 @@ class Instance:
     def __init__(self, id = 0):
         self.id = id
         self.true_label_dict = dict()
+        self.intg_label_dict = dict()
+        self.sorted_label_dicts = {1:list()}
 
     def get_true_label(self, label_id):
         return self.true_label_dict.get(label_id)
@@ -139,6 +150,42 @@ class Instance:
 
     def get_true_label_set(self):
         return self.true_label_dict
+
+    def add_noisy_label(self, label):
+        if self.sorted_label_dicts.get(label.id) == None:
+            self.sorted_label_dicts.setdefault(label.id, list())
+            self.sorted_label_dicts[label.id].append(label)
+            return
+        for l in self.sorted_label_dicts[label.id]:
+            if (l.id == label.id) and (l.worker_id == label.worker_id) and (l.inst_id == label.inst_id)\
+                and (l.val == label.val):
+                return
+        self.sorted_label_dicts[label.id].append(label)
+
+    def get_noisy_labels(self, label_id = 1):
+        return  self.sorted_label_dicts[label_id]
+
+    def add_integrated_label(self, label):
+        if label.id in self.intg_label_dict:
+            self.intg_label_dict[label.id] = label
+        else:
+            self.intg_label_dict.setdefault(label.id, label)
+
+    def get_integrated_label(self, label_id = 1):
+        if label_id in self.intg_label_dict:
+            return self.intg_label_dict[label_id]
+        return None
+
+    def get_label_id_list(self):
+        id_list =[]
+        for (k, v) in self.sorted_label_dicts.items():
+            id_list.append(k)
+        return id_list
+
+    def equal_integrated_true(self, label_id = 1):
+        if self.true_label_dict[label_id].val == self.intg_label_dict[label_id].val:
+            return 1
+        return 0
 
 class Dataset:
     """
@@ -169,7 +216,7 @@ class Dataset:
         return len(self.worker_dict)
 
     def is_multi_class(self):
-        for (k, v) in self.worker_dict:
+        for (k, v) in self.worker_dict.items():
             if v.get_sorted_label_dict_size() > 1:
                 return True
         return False
