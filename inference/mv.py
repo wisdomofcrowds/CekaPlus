@@ -17,8 +17,8 @@ class MVModel(inference.model.Model):
             inst = dataset.get_instance(inst_id)
             label_ids = inst.get_label_id_list()
             for label_id in label_ids:
-                labels = inst.get_noisy_labels()
-                num_class = core.data.Label.get_label_val_num(label_id)
+                labels = inst.get_noisy_labels(label_id)
+                num_class = dataset.get_label_val_size(label_id)
                 voted = self._vote(labels, num_class)
                 # set integrated label
                 integrated_label = core.data.Label(label_id)
@@ -48,4 +48,3 @@ class MVModel(inference.model.Model):
                 maxlist.append(k)
         pos = numpy.random.randint(0, len(maxlist))
         return  maxlist[pos]
-

@@ -8,51 +8,7 @@ class Label:
     SINGLE_LABLE = 3 # because there are 3 items in a line in a response file
     MULTI_LABEL = 4
 
-    _next_id_val = {1:1} # the first term is label id, the second one is its value
-    _id_name_dict = dict() # mapping label_id and label name
-    _val_name_dicts = {1:dict()}  # the first term is label id, the second one is a dictionary to map values
-
-    @classmethod
-    def fetch_val_id_by_name(cls, label_id, val_name):
-        val_dict = cls._val_name_dicts[label_id]
-        for (k, v) in val_dict.items():
-            if v == val_name:
-                return k
-        val_id = cls._next_id_val[label_id]
-        cls._val_name_dicts[label_id].setdefault(val_id, val_name)
-        cls._next_id_val[label_id] += 1
-        return val_id
-
-    @classmethod
-    def fetch_id_by_name(cls, label_name):
-        max_label_id = 0
-        for (k, v) in cls._id_name_dict.items():
-            if k > max_label_id:
-                max_label_id = k
-            if v == label_name:
-                return k
-        max_label_id += 1
-        if cls._next_id_val.get(max_label_id) == None:
-            cls._next_id_val.setdefault(max_label_id, 1)
-        cls._id_name_dict.setdefault(max_label_id, label_name)
-        return max_label_id
-
-    @classmethod
-    def get_id_by_name(cls, label_name):
-        for (k, v) in cls._id_name_dict.items():
-            if v == label_name:
-                return k
-        return cls.INVALID_ID
-
-    @classmethod
-    def get_label_val_num(cls, label_id = 1):
-        return len(cls._val_name_dicts[label_id])
-
-    @classmethod
-    def get_label_id_num(cls):
-        return len(cls._id_name_dict)
-
-    def __init__(self, id = 0):
+    def __init__(self, id):
         self.id = id
         self.val = 0
         self.inst_id = 0
@@ -67,20 +23,7 @@ class Worker:
     GOLD = 9999999 # gold worker that provides the ground truth
     AGGR = 9999998 # aggregated worker
 
-    _next_id = 1 # the worker id starts from 1
-    _id_name_dict = dict() # mapping worker_id and worker name
-
-    @classmethod
-    def fetch_id_by_name(cls, name):
-        for (k, v) in cls._id_name_dict.items():
-            if v == name:
-                return k
-        id = cls._next_id
-        cls._id_name_dict.setdefault(id, name)
-        cls._next_id += 1
-        return id
-
-    def __init__(self, id = 0):
+    def __init__(self, id):
         self.id = id
         self.label_dict = dict()
         self.sorted_label_dicts = {1:dict()}
@@ -115,27 +58,8 @@ class Instance:
     The base class of instance
     """
     INVALID_ID = 0
-    _next_id = 1 # the instance id starts from 1
-    _id_name_dict = dict()
 
-    @classmethod
-    def fetch_id_by_name(cls, name):
-        for (k, v) in cls._id_name_dict.items():
-            if v == name:
-                return k
-        id = cls._next_id
-        cls._id_name_dict.setdefault(id, name)
-        cls._next_id += 1
-        return id
-
-    @classmethod
-    def get_id_by_name(cls, name):
-        for (k, v) in cls._id_name_dict.items():
-            if v == name:
-                return k
-        return cls.INVALID_ID
-
-    def __init__(self, id = 0):
+    def __init__(self, id):
         self.id = id
         self.true_label_dict = dict()
         self.intg_label_dict = dict()
@@ -162,7 +86,7 @@ class Instance:
                 return
         self.sorted_label_dicts[label.id].append(label)
 
-    def get_noisy_labels(self, label_id = 1):
+    def get_noisy_labels(self, label_id):
         return  self.sorted_label_dicts[label_id]
 
     def add_integrated_label(self, label):
@@ -171,7 +95,7 @@ class Instance:
         else:
             self.intg_label_dict.setdefault(label.id, label)
 
-    def get_integrated_label(self, label_id = 1):
+    def get_integrated_label(self, label_id):
         if label_id in self.intg_label_dict:
             return self.intg_label_dict[label_id]
         return None
@@ -182,7 +106,7 @@ class Instance:
             id_list.append(k)
         return id_list
 
-    def equal_integrated_true(self, label_id = 1):
+    def equal_integrated_true(self, label_id):
         if self.true_label_dict[label_id].val == self.intg_label_dict[label_id].val:
             return 1
         return 0
@@ -192,9 +116,99 @@ class Dataset:
     The base class of a data set
     """
     def __init__(self):
+        # info for label creation from files
+        self._label_next_id_val = {1: 1}  # the first term is label id, the second one is its value
+        self._label_id_name_dict = dict()  # mapping label_id and label name
+        self._label_val_name_dicts = {1: dict()}  # the first term is label id, the second one is a dictionary to map values
+        # info for worker creation from files
+        self._worker_next_id = 1  # the worker id starts from 1
+        self._worker_id_name_dict = dict()  # mapping worker_id and worker name
+        # info for instance creation from files
+        self._instance_next_id = 1  # the instance id starts from 1
+        self._instance_id_name_dict = dict()
+        self.create_from_files = False
+        # for general usage
         self.inst_dict = dict()
         self.worker_dict = dict()
+        self.label_info_dict = {1:set()}
 
+    # functions for create label from files
+    def fetch_label_val_id_by_name(self, label_id, val_name):
+        if self._label_val_name_dicts.get(label_id) == None:
+            self._label_val_name_dicts.setdefault(label_id, dict())
+        val_dict = self._label_val_name_dicts[label_id]
+        for (k, v) in val_dict.items():
+            if v == val_name:
+                return k
+        val_id = self._label_next_id_val[label_id]
+        self._label_val_name_dicts[label_id].setdefault(val_id, val_name)
+        self._label_next_id_val[label_id] += 1
+        return val_id
+
+    def fetch_label_id_by_name(self, label_name):
+        max_label_id = 0
+        for (k, v) in self._label_id_name_dict.items():
+            if k > max_label_id:
+                max_label_id = k
+            if v == label_name:
+                return k
+        max_label_id += 1
+        if self._label_next_id_val.get(max_label_id) == None:
+            self._label_next_id_val.setdefault(max_label_id, 1)
+        self._label_id_name_dict.setdefault(max_label_id, label_name)
+        return max_label_id
+
+    def get_label_id_by_name(self, label_name):
+        for (k, v) in self._label_id_name_dict.items():
+            if v == label_name:
+                return k
+        return Label.INVALID_ID
+
+    def get_label_name_by_id(self, label_id):
+        return self._label_id_name_dict[label_id]
+
+    def get_label_val_name_by_id(self, label_id, val_id):
+        return self._label_val_name_dicts[label_id][val_id]
+
+    def label_info_confirm(self):
+        # add label info
+        for (k, v) in self._label_val_name_dicts.items():
+            for (k2, v2) in v.items():
+                self.add_label_info(k, k2)
+
+    # functions for create workers from files
+    def fetch_worker_id_by_name(self, name):
+        for (k, v) in self._worker_id_name_dict.items():
+            if v == name:
+                return k
+        id = self._worker_next_id
+        self._worker_id_name_dict.setdefault(id, name)
+        self._worker_next_id += 1
+        return id
+
+    def get_worker_name_by_id(self, id):
+        return self._worker_id_name_dict[id]
+
+    # functions for create instances from files
+    def fetch_instance_id_by_name(self, name):
+        for (k, v) in self._instance_id_name_dict.items():
+            if v == name:
+                return k
+        id = self._instance_next_id
+        self._instance_id_name_dict.setdefault(id, name)
+        self._instance_next_id += 1
+        return id
+
+    def get_instance_id_by_name(self, name):
+        for (k, v) in self._instance_id_name_dict.items():
+            if v == name:
+                return k
+        return Instance.INVALID_ID
+
+    def get_instance_name_by_id(self, id):
+        return self._instance_id_name_dict[id]
+
+    # general usage functions
     def get_instance(self, id):
         return self.inst_dict.get(id)
 
@@ -220,3 +234,14 @@ class Dataset:
             if v.get_sorted_label_dict_size() > 1:
                 return True
         return False
+
+    def add_label_info(self, label_id, val):
+        if self.label_info_dict.get(label_id) == None:
+            self.label_info_dict.setdefault(label_id, set())
+        self.label_info_dict[label_id].add(val)
+
+    def get_label_id_size(self):
+        return len(self.label_info_dict)
+
+    def get_label_val_size(self, label_id):
+        return len(self.label_info_dict[label_id])

@@ -20,7 +20,7 @@ def load_file(resp_path, gold_path = None):
                 print('Error formatted gold file', end='\n')
                 return None
 
-            inst_id = core.data.Instance.fetch_id_by_name(strs[0])
+            inst_id = dataset.fetch_instance_id_by_name(strs[0])
             inst = dataset.get_instance(inst_id)
             if inst == None:
                 inst = core.data.Instance(inst_id)
@@ -29,10 +29,11 @@ def load_file(resp_path, gold_path = None):
             label_id =  1
             label_val = 0
             if (len(strs) + 1) == core.data.Label.SINGLE_LABLE:
-                label_val = core.data.Label.fetch_val_id_by_name(label_id, strs[1])  # label id is 1
+                label_id = dataset.fetch_label_id_by_name('SINGLE_LABEL')
+                label_val = dataset.fetch_label_val_id_by_name(label_id, strs[1])  # label id is 1
             if (len(strs) + 1) == core.data.Label.MULTI_LABEL:
-                label_id = core.data.Label.fetch_id_by_name(strs[1])
-                label_val = core.data.Label.fetch_val_id_by_name(label_id, strs[2])
+                label_id = dataset.fetch_label_id_by_name(strs[1])
+                label_val = dataset.fetch_label_val_id_by_name(label_id, strs[2])
             true_label = inst.get_true_label(label_id)
             if true_label == None:
                 true_label = core.data.Label(label_id)
@@ -52,7 +53,7 @@ def load_file(resp_path, gold_path = None):
             print('Error formatted response file', end='\n')
             return None
 
-        worker_id = core.data.Worker.fetch_id_by_name(strs[0])
+        worker_id = dataset.fetch_worker_id_by_name(strs[0])
         worker = dataset.get_worker(worker_id)
         if worker == None:
             worker = core.data.Worker(worker_id)
@@ -60,26 +61,28 @@ def load_file(resp_path, gold_path = None):
 
         inst_id = core.data.Instance.INVALID_ID
         if has_gold_file == True:
-            inst_id = core.data.Instance.get_id_by_name(strs[1])
+            inst_id = dataset.get_instance_id_by_name(strs[1])
             if inst_id == core.data.Instance.INVALID_ID:
                 print('Warning find an instance ' + strs[1] +' not in gold file, skip it', end='\n')
                 continue
         else:
-            inst_id = core.data.Instance.fetch_id_by_name(strs[1])
+            inst_id = dataset.fetch_instance_id_by_name(strs[1])
 
         label_id = 1 #default label _id for single labeling
         label_val = 0
         if  len(strs) == core.data.Label.SINGLE_LABLE:
-            label_val = core.data.Label.fetch_val_id_by_name(label_id, strs[2])  # label id is 1
+            if has_gold_file == False:
+                label_id = dataset.fetch_label_id_by_name('SINGLE_LABEL')
+            label_val = dataset.fetch_label_val_id_by_name(label_id, strs[2])  # label id is 1
         if  len(strs) == core.data.Label.MULTI_LABEL:
             if has_gold_file == True:
-                label_id = core.data.Label.get_id_by_name(strs[2])
+                label_id = dataset.get_label_id_by_name(strs[2])
                 if label_id == core.data.Label.INVALID_ID:
                     print('Warning find a label name ' + strs[2] + ' not in gold file, skip it', end='\n')
                     continue
             else:
-                label_id = core.data.Label.fetch_id_by_name(strs[2])
-            label_val = core.data.Label.fetch_val_id_by_name(label_id, strs[3])
+                label_id = dataset.fetch_label_id_by_name(strs[2])
+            label_val = dataset.fetch_label_val_id_by_name(label_id, strs[3])
 
         inst = dataset.get_instance(inst_id)
         if inst == None:
@@ -96,6 +99,8 @@ def load_file(resp_path, gold_path = None):
         inst.add_noisy_label(label)
         
     resp_file.close()
+    dataset.label_info_confirm()
+    dataset.create_from_files = True
     return dataset
 
 
@@ -118,8 +123,8 @@ def save_file(dataset, resp_path, gold_path = None):
             if len(true_label_set) == 1:
                 gold_file.write(str(inst.id) + '\t' + str(inst.get_true_label(1).val)+'\n')
             else:
-                for (k, v) in true_label_set:
-                    gold_file.write(str(inst.id) + '\t' + str(k) +'\t' + str(v) + '\n')
+                for (k, v) in true_label_set.items():
+                    gold_file.write(str(inst.id) + '\t' + str(k) +'\t' + str(v.val) + '\n')
         gold_file.close()
 
     resp_file = open(resp_path, 'w')
@@ -129,8 +134,30 @@ def save_file(dataset, resp_path, gold_path = None):
         labels = worker.get_label_list()
         for label in labels:
             if multi_class == True:
-                resp_file.write(str(worker.id)+ '\t' + str(label.id) + '\t' + str(label.inst_id) + '\t' + str(label.val) + '\n')
+                resp_file.write(str(worker.id)+ '\t' + str(label.inst_id) + '\t' + str(label.id) + '\t' + str(label.val) + '\n')
             else:
                 resp_file.write(str(worker.id) + '\t' + str(label.inst_id) + '\t' + str(label.val) + '\n')
 
     resp_file.close()
+
+def save_map_file(dataset, map_path):
+    if dataset.create_from_files:
+        map_file = open(map_path, 'w')
+        map_file.write('Label id mapping: \n')
+        for label_id in range(1, dataset.get_label_id_size() + 1):
+            map_file.write(dataset.get_label_name_by_id(label_id) + '\t\t\t(id='+ str(label_id) + ')\n')
+        map_file.write('\nLabel value mapping: \n')
+        for label_id in range(1, dataset.get_label_id_size() + 1):
+            label_name =  dataset.get_label_name_by_id(label_id)
+            for value_id in range(1,  dataset.get_label_val_size(label_id)+1):
+                 map_file.write(label_name + '(id='+ str(label_id)+')\t\t\t' + \
+                                dataset. get_label_val_name_by_id(label_id, value_id) + '(id='+str(value_id) +')\n')
+        map_file.write('\nWorker mapping: \n')
+        for worker_id in range(1, dataset.get_worker_size() + 1):
+            worker_name = dataset.get_worker_name_by_id(worker_id)
+            map_file.write(worker_name + '\t\t\t(id='+ str(worker_id) + ')\n')
+        map_file.write('\nInstance mapping: \n')
+        for inst_id in range(1, dataset.get_instance_size() + 1):
+            inst_name = dataset.get_instance_name_by_id(inst_id)
+            map_file.write(inst_name + '\t\t\t(id=' + str(inst_id) + ')\n')
+        map_file.close()
