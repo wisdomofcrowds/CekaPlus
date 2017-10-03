@@ -56,7 +56,7 @@ def rand_int_no_repeat(low, high, size):
                 lst.append(x[0])
         return  lst
 
-def get_max_index(vals):
+def get_max_index(vals, flag=False):
     maxindex = 1
     maxval = vals[1]
     size = len(vals)
@@ -64,6 +64,18 @@ def get_max_index(vals):
         if vals[i] > maxval:
             maxval = vals[i]
             maxindex = i
+    # process multiple maximum
+    if (flag == True):
+        pos = []
+        for i in range(1, size):
+            if vals[i] == maxval:
+                pos.append(i)
+        size2 = len(pos)
+        if size2 == 1:
+            return maxindex
+        else:
+            x = numpy.random.randint(0, size2)
+            maxindex = pos[x]
     return maxindex
 
 def get_full_combination(M, K):
