@@ -52,6 +52,13 @@ class Worker:
             list.append(v)
         return list
 
+    def get_label_val_for_inst(self, inst_id, label_id):
+        tpl = (label_id, inst_id, self.id)
+        label = self.get_label(tpl)
+        if label == None:
+            return 0
+        else:
+            return label.val
 
 class Instance:
     """

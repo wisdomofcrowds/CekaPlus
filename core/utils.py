@@ -55,3 +55,13 @@ def rand_int_no_repeat(low, high, size):
             else:
                 lst.append(x[0])
         return  lst
+
+def get_max_index(vals):
+    maxindex = 1
+    maxval = vals[1]
+    size = len(vals)
+    for i in range(2, size):
+        if vals[i] > maxval:
+            maxval = vals[i]
+            maxindex = i
+    return maxindex

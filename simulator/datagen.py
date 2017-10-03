@@ -55,10 +55,10 @@ class datagen:
 
 def scenario1():
     generator = datagen(True)
-    generator.inst_num = 10 # number of instances
-    generator.worker_num = 6 # number of workers
-    generator.label_num = 1 # number of label
-    num_val = 10 # each label has K values
+    generator.inst_num = 1000 # number of instances
+    generator.worker_num = 10 # number of workers
+    generator.label_num = 10 # number of label
+    num_val = 4 # each label has K values
 
     # correct rate of workers are uniformed distributed in [0.6, 0.8]
     correct_rates = numpy.random.uniform(0.4, 0.5, generator.worker_num)
