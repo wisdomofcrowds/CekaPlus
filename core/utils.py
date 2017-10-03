@@ -65,3 +65,26 @@ def get_max_index(vals):
             maxval = vals[i]
             maxindex = i
     return maxindex
+
+def get_full_combination(M, K):
+    current = 0
+    comb = []
+    s = [None]
+    for m in range(1, M+1):
+        s.append(0)
+    pos = 1
+    full_combination(M, K, pos, comb, s)
+    return comb
+
+def full_combination(m, K, pos, comb, s):
+    if (m != 0):
+        for i in range(1, K+1):
+            s[pos] = i
+            full_combination(m - 1, K, pos + 1, comb, s)
+    else:
+        comb.append(s.copy())
+
+
+
+
+

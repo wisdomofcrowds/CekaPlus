@@ -40,8 +40,13 @@ for label_id in range(1, num_label + 1):
     print('DS acc on label (' + str(label_id) +'): '+ str(eval.get_accuracy_on_label(label_id)))
 print('DS total acc: ' + str(eval.get_accuracy()))
 
-#mmli = inference.mmli.MMLIModel(maxround)
-#mmli.infer(dataset)
+mmli = inference.mmli.MMLIModel(maxround)
+mmli.infer(dataset)
+eval = core.perf.Evaluation(dataset)
+num_label = dataset.get_label_id_size()
+for label_id in range(1, num_label + 1):
+    print('MMLI acc on label (' + str(label_id) +'): '+ str(eval.get_accuracy_on_label(label_id)))
+print('MMLI total acc: ' + str(eval.get_accuracy()))
 
 #mmld = inference.mmld.MMLDModel(4, maxround)
 #mmld.infer(dataset)

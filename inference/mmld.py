@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy
-from core import data, samplable
+from core import data, samplable, utils
 from inference import model
 
 class MMLDWorker:
@@ -52,18 +52,20 @@ class MMLDInstance:
         self.K = 0
         self.y_list = []
         self.prob_list = []
+        self.likelihood = samplable.RealV(0.0)
+        self.y_combination = []
 
     def initialize(self, M, K):
         self.M = M
         self.K = K
         self.y_list.append(None)
+        self.y_combination.append(None)
         self.prob_list.append(None)
         for m in range(1, self.M + 1):
             self.y_list.append(samplable.IntV(0))
-            probs = numpy.ndarray(shape=(self.K + 1), dtype=samplable.RealV, order='C')
-            for i in range(1, self.K + 1):
-                probs[i] = samplable.RealV(1.0 / self.K)
-            self.prob_list.append(probs)
+        self.y_combination.extend(utils.get_full_combination(self.M, self.K))
+        for i in range(1, len(self.y_combination)):
+            self.prob_list.append(samplable.RealV(0.0))
         #self.printYs()
         #self.printProbs()
 

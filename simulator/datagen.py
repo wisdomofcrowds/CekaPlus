@@ -55,9 +55,9 @@ class datagen:
 
 def scenario1():
     generator = datagen(True)
-    generator.inst_num = 1000 # number of instances
+    generator.inst_num = 100 # number of instances
     generator.worker_num = 10 # number of workers
-    generator.label_num = 10 # number of label
+    generator.label_num = 4 # number of label
     num_val = 4 # each label has K values
 
     # correct rate of workers are uniformed distributed in [0.6, 0.8]
