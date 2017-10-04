@@ -8,11 +8,11 @@ import inference.ds
 import inference.mmli
 import inference.mmld
 
-in_resp_path = 'D:/Github/datasets/aircrowd6.response.txt'
-in_gold_path = 'D:/Github/datasets/aircrowd6.gold.txt'
+#in_resp_path = 'D:/Github/datasets/aircrowd6.response.txt'
+#in_gold_path = 'D:/Github/datasets/aircrowd6.gold.txt'
 
-#in_resp_path = 'D:/Github/datasets/synth.resp'
-#in_gold_path = 'D:/Github/datasets/synth.gold'
+in_resp_path = 'D:/Github/datasets/synth.resp'
+in_gold_path = 'D:/Github/datasets/synth.gold'
 
 #out_resp_path = 'D:/Github/datasets/aircrowd6.resp'
 #out_gold_path = 'D:/Github/datasets/aircrowd6.gold'
@@ -49,6 +49,12 @@ maxround = 20
 #print('MMLI total acc: ' + str(eval.get_accuracy()))
 
 mmld = inference.mmld.MMLDModel(4, maxround)
+omega = [None]
+omega.append(0.15)
+omega.append(0.28)
+omega.append(0.24)
+omega.append(0.33)
+mmld.set_omega(omega)
 mmld.infer(dataset)
 eval = core.perf.Evaluation(dataset)
 num_label = dataset.get_label_id_size()

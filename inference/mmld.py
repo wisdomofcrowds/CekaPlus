@@ -216,7 +216,7 @@ class MMLDModel(model.Model):
         self.R = R
         self.theta_dict = dict()
         self.maxround = maxrnd
-        self.omega = []
+        self.omega = [None]
 
     def initialize(self, dataset):
         self.M = dataset.get_label_id_size()
@@ -226,7 +226,6 @@ class MMLDModel(model.Model):
         print('Total ' + str(self.I) + ' instances and ' + str(self.J) + ' workers')
         self.initialK(dataset)
         print('K = ' + str(self.K))
-        self.omega.append(None)
         for i in range(1, self.I + 1):
             inst = dataset.get_instance(i)
             mmld_inst = MMLDInstance(inst)
@@ -247,7 +246,12 @@ class MMLDModel(model.Model):
                 theta_list.append(thetas)
             self.theta_dict.setdefault(r, theta_list)
             # initialize omega
-            self.omega.append(samplable.RealV(1.0 / self.R))
+            if (len(self.omega)==1):
+                self.omega.append(samplable.RealV(1.0 / self.R))
+
+    def set_omega(self, vals):
+        for r in range(1, self.R + 1):
+            self.omega.append(samplable.RealV(vals[r]))
 
     def initialK(self, dataset):
         maxK = 0
