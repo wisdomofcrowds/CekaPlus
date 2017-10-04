@@ -223,11 +223,11 @@ class DSModel(model.Model):
             w.m_step(self.instances, m)
 
     def em(self, m):
-        count = 0
+        count = 1
         last_likelihood = 0
         curr_likehihood = self.loglikelihood(m)
         print('DS on label (' + str(m) + ') initial log-likelihood = ' + str(curr_likehihood))
-        while ((count < self.maxround) and (abs(curr_likehihood - last_likelihood) > model.Model.LIKELIHOOD_DIFF)):
+        while ((count <= self.maxround) and (abs(curr_likehihood - last_likelihood) > model.Model.LIKELIHOOD_DIFF)):
             self.e_step(m)
             self.m_step(m)
             last_likelihood = curr_likehihood

@@ -8,11 +8,11 @@ import inference.ds
 import inference.mmli
 import inference.mmld
 
-#in_resp_path = 'D:/Github/datasets/aircrowd6.response.txt'
-#in_gold_path = 'D:/Github/datasets/aircrowd6.gold.txt'
+in_resp_path = 'D:/Github/datasets/aircrowd6.response.txt'
+in_gold_path = 'D:/Github/datasets/aircrowd6.gold.txt'
 
-in_resp_path = 'D:/Github/datasets/synth.resp'
-in_gold_path = 'D:/Github/datasets/synth.gold'
+#in_resp_path = 'D:/Github/datasets/synth.resp'
+#in_gold_path = 'D:/Github/datasets/synth.gold'
 
 #out_resp_path = 'D:/Github/datasets/aircrowd6.resp'
 #out_gold_path = 'D:/Github/datasets/aircrowd6.gold'
@@ -32,21 +32,26 @@ for label_id in range(1, num_label + 1):
 print('total acc: ' + str(eval.get_accuracy()))
 
 maxround = 20
-ds = inference.ds.DSModel(maxround)
-ds.infer(dataset)
+#ds = inference.ds.DSModel(maxround)
+#ds.infer(dataset)
+#eval = core.perf.Evaluation(dataset)
+#num_label = dataset.get_label_id_size()
+#for label_id in range(1, num_label + 1):
+#    print('DS acc on label (' + str(label_id) +'): '+ str(eval.get_accuracy_on_label(label_id)))
+#print('DS total acc: ' + str(eval.get_accuracy()))
+
+#mmli = inference.mmli.MMLIModel(maxround)
+#mmli.infer(dataset)
+#eval = core.perf.Evaluation(dataset)
+#num_label = dataset.get_label_id_size()
+#for label_id in range(1, num_label + 1):
+#    print('MMLI acc on label (' + str(label_id) +'): '+ str(eval.get_accuracy_on_label(label_id)))
+#print('MMLI total acc: ' + str(eval.get_accuracy()))
+
+mmld = inference.mmld.MMLDModel(4, maxround)
+mmld.infer(dataset)
 eval = core.perf.Evaluation(dataset)
 num_label = dataset.get_label_id_size()
 for label_id in range(1, num_label + 1):
-    print('DS acc on label (' + str(label_id) +'): '+ str(eval.get_accuracy_on_label(label_id)))
-print('DS total acc: ' + str(eval.get_accuracy()))
-
-mmli = inference.mmli.MMLIModel(maxround)
-mmli.infer(dataset)
-eval = core.perf.Evaluation(dataset)
-num_label = dataset.get_label_id_size()
-for label_id in range(1, num_label + 1):
-    print('MMLI acc on label (' + str(label_id) +'): '+ str(eval.get_accuracy_on_label(label_id)))
-print('MMLI total acc: ' + str(eval.get_accuracy()))
-
-#mmld = inference.mmld.MMLDModel(4, maxround)
-#mmld.infer(dataset)
+    print('MMLD acc on label (' + str(label_id) +'): '+ str(eval.get_accuracy_on_label(label_id)))
+print('MMLD total acc: ' + str(eval.get_accuracy()))
