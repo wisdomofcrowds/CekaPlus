@@ -144,7 +144,7 @@ class MMLIInstance:
             integrated_label.worker_id = data.Worker.AGGR
             integrated_label.val = y_val
             self.inst.add_integrated_label(integrated_label)
-            print('instance ' + str(self.inst.id) + ' get integrated label (' + str(m) + ') :' + str(integrated_label.val))
+           # print('instance ' + str(self.inst.id) + ' get integrated label (' + str(m) + ') :' + str(integrated_label.val))
 
     def printYs(self):
         print('The estimated class of instance ' + str(self.inst.id) +  ':', end=' ')
