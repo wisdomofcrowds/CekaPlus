@@ -4,12 +4,12 @@ class Model:
     """
     the base class for inference model
     """
-    LIKELIHOOD_DIFF = 0.01
+    LIKELIHOOD_DIFF = 0.001
 
     def __init__(self):
         pass
 
-    def infer(self, dataset):
+    def infer(self, dataset, soft=False):
         pass
 
     @classmethod
