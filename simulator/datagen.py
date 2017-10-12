@@ -57,11 +57,11 @@ def scenario1():
     generator = datagen(True)
     generator.inst_num = 100 # number of instances
     generator.worker_num = 10 # number of workers
-    generator.label_num = 6 # number of label
-    num_val = 3# each label has K values
+    generator.label_num = 6# number of label
+    num_val = 2# each label has K values
 
     # correct rate of workers are uniformed distributed in [0.6, 0.8]
-    correct_rates = numpy.random.uniform(0.4, 0.5, generator.worker_num)
+    correct_rates = numpy.random.uniform(0.5, 0.6, generator.worker_num)
     generator.create_ml_uniK_uniDistrb_uniError(num_val, correct_rates)
 
     # save data

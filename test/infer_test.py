@@ -58,22 +58,16 @@ for label_id in range(1, num_label + 1):
     print('MMLI acc on label (' + str(label_id) +'): '+ str(eval.get_accuracy_on_label(label_id)))
 print('MMLI total acc: ' + str(eval.get_accuracy()))
 
-#R=4
-#mmld = inference.mmld.MMLDModel(R, maxround)
-#omega = [None]
-#rlist = core.utils.gen_rand_sum_one(R)
-#for r in rlist:
-#    omega.append(r)
-#omega.append(0.20)
-#omega.append(0.23)
-#omega.append(0.25)
-#omega.append(0.32)
-#omega.append(0.17)
-#omega.append(0.19)
-#mmld.set_omega(omega)
-#mmld.infer(dataset)
-#eval = core.perf.Evaluation(dataset)
-#num_label = dataset.get_label_id_size()
-#for label_id in range(1, num_label + 1):
-#    print('MMLD acc on label (' + str(label_id) +'): '+ str(eval.get_accuracy_on_label(label_id)))
-#print('MMLD total acc: ' + str(eval.get_accuracy()))
+R=3
+mmld = inference.mmld.MMLDModel(R, maxround)
+omega = [None]
+rlist = core.utils.gen_rand_sum_one(R)
+for r in rlist:
+    omega.append(r)
+mmld.set_omega(omega)
+mmld.infer(dataset, True)
+eval = core.perf.Evaluation(dataset)
+num_label = dataset.get_label_id_size()
+for label_id in range(1, num_label + 1):
+    print('MMLD acc on label (' + str(label_id) +'): '+ str(eval.get_accuracy_on_label(label_id)))
+print('MMLD total acc: ' + str(eval.get_accuracy()))

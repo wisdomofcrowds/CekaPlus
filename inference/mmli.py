@@ -56,7 +56,7 @@ class MMLIWorker:
                     self.pi_list[m][k][d].append(self.pi_list[m][k][d].getV())
 
     def m_update_soft(self, instances, m):
-        curr_pi = numpy.ndarray(shape=(self.K + 1, self.K + 1), dtype=int, order='C')
+        curr_pi = numpy.ndarray(shape=(self.K + 1, self.K + 1), dtype=float, order='C')
         curr_pi.fill(0)
         for inst in instances:
             d = self.worker.get_label_val_for_inst(inst.inst.id, m)
@@ -70,7 +70,7 @@ class MMLIWorker:
                 s += curr_pi[k][q]
             if s != 0:
                 for d in range(1, self.K + 1):
-                    self.pi_list[m][k][d].append(float(curr_pi[k][d]) / float(s))
+                    self.pi_list[m][k][d].append(curr_pi[k][d] / s)
             else:
                 for d in range(1, self.K + 1):
                     self.pi_list[m][k][d].append(self.pi_list[m][k][d].getV())
