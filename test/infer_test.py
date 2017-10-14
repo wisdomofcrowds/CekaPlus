@@ -46,7 +46,7 @@ for label_id in range(1, num_label + 1):
 print('total acc: ' + str(eval.get_accuracy()))
 
 maxround = 20
-soft = True
+soft = False
 
 ds = inference.ds.DSModel(maxround)
 ds.infer(dataset, soft)
@@ -80,9 +80,10 @@ print(rlist)
 for r in rlist:
     omega.append(r)
 mmld.set_omega(omega)
-mmld.infer(dataset, True)
+mmld.infer(dataset, soft)
 eval = core.perf.Evaluation(dataset)
 num_label = dataset.get_label_id_size()
 for label_id in range(1, num_label + 1):
     print('MMLD acc on label (' + str(label_id) +'): '+ str(eval.get_accuracy_on_label(label_id)))
 print('MMLD total acc: ' + str(eval.get_accuracy()))
+

@@ -299,10 +299,10 @@ class MMLIModel(model.Model):
     def infer(self, dataset, soft=True):
         self.initialize(dataset)
         count = 1
-        last_likelihood = 0
+        last_likelihood = -999999999
         curr_likehihood = self.loglikelihood()
         print('MMLI initial log-likelihood = ' + str(curr_likehihood))
-        while ((count <= self.maxround) and (abs(curr_likehihood - last_likelihood) > model.Model.LIKELIHOOD_DIFF)):
+        while ((count <= self.maxround) and (abs(curr_likehihood - last_likelihood) / abs(last_likelihood) > self.converge_rate)):
             if (soft==True):
                 self.e_step()
                 self.m_step()

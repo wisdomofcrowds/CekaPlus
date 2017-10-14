@@ -273,10 +273,10 @@ class DSModel(model.Model):
 
     def em(self, m, soft):
         count = 1
-        last_likelihood = 0
+        last_likelihood = -999999999
         curr_likehihood = self.loglikelihood(m)
         print('DS on label (' + str(m) + ') initial log-likelihood = ' + str(curr_likehihood))
-        while ((count <= self.maxround) and (abs(curr_likehihood - last_likelihood) > model.Model.LIKELIHOOD_DIFF)):
+        while ((count <= self.maxround) and (abs(curr_likehihood - last_likelihood) / abs(last_likelihood) > self.converge_rate)):
             if (soft == True):
                 self.e_step(m)
                 self.m_step(m)
