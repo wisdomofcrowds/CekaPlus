@@ -33,7 +33,7 @@ class DSWorker:
 
     def m_step(self, instances, m):
         curr_pi = numpy.ndarray(shape=(self.K + 1, self.K + 1), dtype=float, order='C')
-        curr_pi.fill(0)
+        curr_pi.fill(0.0)
         for inst in instances:
             d = self.worker.get_label_val_for_inst(inst.inst.id, m)
             if d != 0:
