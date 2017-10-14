@@ -96,7 +96,15 @@ def full_combination(m, K, pos, comb, s):
     else:
         comb.append(s.copy())
 
-
-
-
-
+def split_val_rand(val, n):
+    """
+    randomly split a val into n pieces
+    :param val:
+    :param n:
+    :return:
+    """
+    parts = numpy.random.uniform(0, 1, n)
+    s = sum(parts)
+    for i in range (0, n):
+        parts[i] = parts[i]*val/s
+    return parts
