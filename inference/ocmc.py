@@ -1,83 +1,64 @@
 # -*- coding: utf-8 -*-
+# One-Coin model for multi-class labeling
 
 import numpy
 import math
 from core import data, samplable, utils
 from inference import model
 
-class DSWorker:
+class OCMCWorker:
 
     def __init__(self, worker):
         self.worker = worker
         self.M = 0
         self.K = 0
-        self.pi_list = []
+        self.rho_list = []
 
     def initialize(self, M, K):
         self.M = M
         self.K = K
-        self.pi_list.append(None)
+        self.rho_list.append(None)
         for m in range(1, self.M + 1):
-            pi = numpy.ndarray(shape=(self.K + 1, self.K + 1), dtype=samplable.RealV, order='C')
-            self.initialize_pi(pi)
-            self.pi_list.append(pi)
-        #self.print_pis()
+            rho = samplable.RealV(0.0)
+            self.initialize_rho(rho)
+            self.rho_list.append(rho)
+        #self.print_rhos()
 
-    def initialize_pi(self,  pi):
-        for i in range(1, self.K + 1):
-            for j in range(1, self.K + 1):
-                if i == j:
-                    pi[i][j] = samplable.RealV(0.9)
-                else:
-                    pi[i][j] = samplable.RealV(0.1 / (self.K - 1))
+    def initialize_rho(self,  rho):
+        rho.setV(0.8)
 
     def m_step(self, instances, m):
-        curr_pi = numpy.ndarray(shape=(self.K + 1, self.K + 1), dtype=float, order='C')
-        curr_pi.fill(0)
+        curr_rho = numpy.ndarray(shape=(self.K + 1), dtype=float, order='C')
+        curr_rho.fill(0.0)
+        total = 0.0
         for inst in instances:
             d = self.worker.get_label_val_for_inst(inst.inst.id, m)
-            if d != 0:
+            if (d != 0):
                 for k in range(1, self.K + 1):
-                    curr_pi[k][d] += inst.y_prob_list[m][k].getV()
-        for k in range(1, self.K + 1):
-            s = 0
-            for q in range(1, self.K + 1):
-                s += curr_pi[k][q]
-            if s != 0:
-                for d in range(1, self.K + 1):
-                    self.pi_list[m][k][d].append(curr_pi[k][d] / s)
-            else:
-                for d in range(1, self.K + 1):
-                    self.pi_list[m][k][d].append(self.pi_list[m][k][d].getV())
+                    if (d == k):
+                        curr_rho[d] += inst.y_prob_list[m][k].getV()
+                total += 1.0
+        self.rho_list[m].append(sum(curr_rho) / total)
 
     def m_step_hard(self, instances, m):
-        curr_pi = numpy.ndarray(shape=(self.K + 1, self.K + 1), dtype=int, order='C')
-        curr_pi.fill(0)
+        correct = 0.0
+        total = 0.0
         for inst in instances:
             d = self.worker.get_label_val_for_inst(inst.inst.id, m)
-            if d != 0:
-                curr_pi[inst.y_list[m].getV()][d] += 1
-        for k in range(1, self.K + 1):
-            s = 0
-            for q in range(1, self.K + 1):
-                s += curr_pi[k][q]
-            if s != 0:
-                for d in range(1, self.K + 1):
-                    self.pi_list[m][k][d].append(float(curr_pi[k][d]) / float(s))
-            else:
-                for d in range(1, self.K + 1):
-                    self.pi_list[m][k][d].append(self.pi_list[m][k][d].getV())
+            if (d != 0):
+                if inst.y_list[m].getV() == d:
+                    correct += 1.0
+                total += 1.0
+        self.rho_list[m].append(correct/total)
 
-    def print_pis(self):
+    def print_rho(self):
         for m in range(1, self.M + 1):
-            print('pi (' + str(m) + ') of worker ' + str(self.worker.id) + ':')
-            for i in range(1, self.K + 1):
-                for j in range(1, self.K + 1):
-                    self.pi_list[m][i][j].print_obj()
-                print('')
+            print('rho (' + str(m) + ') of worker ' + str(self.worker.id) + ':')
+            self.rho_list[m].print_obj()
+            print('')
 
 
-class DSInstance:
+class OCMCInstance:
 
     def __init__(self, inst):
         self.inst = inst
@@ -108,8 +89,10 @@ class DSInstance:
                 val = w.worker.get_label_val_for_inst(self.inst.id, m)
                 if val == 0:
                     continue
+                elif val == k:
+                    prod *= w.rho_list[m].getV()
                 else:
-                    prod *= w.pi_list[m][k][val].getV()
+                    prod *= ((1.0 - w.rho_list[m].getV())/(self.K - 1))
             p_k.append(prod * thetas[k].getV())
         self.likelihood_list[m].append(sum(p_k))
         return self.likelihood_list[m].getV()
@@ -121,8 +104,10 @@ class DSInstance:
                 val = w.worker.get_label_val_for_inst(self.inst.id, m)
                 if val == 0:
                     continue
+                elif val == k:
+                    prod *= w.rho_list[m].getV()
                 else:
-                    prod *= w.pi_list[m][k][val].getV()
+                    prod *= ((1.0 - w.rho_list[m].getV()) / (self.K - 1))
             self.y_prob_list[m][k].append(prod * thetas[k].getV())
         # uniform
         sum = 0.0
@@ -138,12 +123,14 @@ class DSInstance:
                 val = w.worker.get_label_val_for_inst(self.inst.id, m)
                 if val == 0:
                     continue
+                elif val == k:
+                    prod *= w.rho_list[m].getV()
                 else:
-                    prod *= w.pi_list[m][k][val].getV()
+                    prod *= ((1.0 - w.rho_list[m].getV()) / (self.K - 1))
             self.y_prob_list[m][k].append(prod * thetas[k].getV())
         estimated_y = self.compute_estimated_y(m)
         self.y_list[m].append(estimated_y)
-        #print('inst '+ str(self.inst.id) + ' get estimated y(' + str(m) + ') = '+ str(estimated_y))
+        # print('inst '+ str(self.inst.id) + ' get estimated y(' + str(m) + ') = '+ str(estimated_y))
 
     def compute_estimated_y(self, m, random=False):
         prob = []
@@ -181,9 +168,9 @@ class DSInstance:
             print('')
 
 
-class DSModel(model.Model):
+class OCMCModel(model.Model):
     """
-    Dawid & Skene's model
+    One-Coin model for multi-class labeling model
     """
     def __init__(self, maxrnd):
         model.Model.__init__(self)
@@ -206,14 +193,14 @@ class DSModel(model.Model):
         print('K = ' + str(self.K))
         for i in range(1, self.I + 1):
             inst = dataset.get_instance(i)
-            ds_inst = DSInstance(inst)
-            ds_inst.initialize(self.M, self.K)
-            self.instances.append(ds_inst)
+            ocmc_inst = OCMCInstance(inst)
+            ocmc_inst.initialize(self.M, self.K)
+            self.instances.append(ocmc_inst)
         for w in range(1, self.J + 1):
             worker = dataset.get_worker(w)
-            ds_worker = DSWorker(worker)
-            ds_worker.initialize(self.M, self.K)
-            self.workers.append(ds_worker)
+            ocmc_worker = OCMCWorker(worker)
+            ocmc_worker.initialize(self.M, self.K)
+            self.workers.append(ocmc_worker)
         for m in range(1, self.M + 1):
             thetas = numpy.ndarray(shape=(self.K+1), dtype=samplable.RealV, order='C')
             for i in range(1, self.K + 1):
@@ -268,15 +255,15 @@ class DSModel(model.Model):
         s = sum(numlist)
         for k in range(1, self.K + 1):
             self.theta_list[m][k].append(numlist[k] / s)
-        #self.print_theta()
+        # self.print_theta()
         for w in self.workers:
             w.m_step_hard(self.instances, m)
 
-    def em(self, m, soft):
+    def em(self, m, soft=True):
         count = 1
         last_likelihood = 0
         curr_likehihood = self.loglikelihood(m)
-        print('DS on label (' + str(m) + ') initial log-likelihood = ' + str(curr_likehihood))
+        print('OCMC on label (' + str(m) + ') initial log-likelihood = ' + str(curr_likehihood))
         while ((count <= self.maxround) and (abs(curr_likehihood - last_likelihood) > model.Model.LIKELIHOOD_DIFF)):
             if (soft == True):
                 self.e_step(m)
@@ -286,7 +273,7 @@ class DSModel(model.Model):
                 self.m_step_hard(m)
             last_likelihood = curr_likehihood
             curr_likehihood = self.loglikelihood(m)
-            print('DS on label (' + str(m) + ') round (' + str(count) +') log-likelihood = ' + str(curr_likehihood))
+            print('OCMC on label (' + str(m) + ') round (' + str(count) +') log-likelihood = ' + str(curr_likehihood))
             count += 1
 
     def final_aggregate(self, m, soft):
@@ -301,7 +288,7 @@ class DSModel(model.Model):
 
     def print_theta(self):
         for m in range(1, self.M + 1):
-            print('probability of classes on label (' + str(m) +'):')
+            print('probability of classes on label (' + str(m) + '):')
             for k in range(1, self.K + 1):
                 self.theta_list[m][k].print_obj()
             print('')
