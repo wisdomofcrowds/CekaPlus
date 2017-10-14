@@ -24,12 +24,6 @@ class DSWorker:
         #self.print_pis()
 
     def initialize_pi(self,  pi):
-        """
-        the basic initialization of pi
-        :param K:
-        :param pi:
-        :return:
-        """
         for i in range(1, self.K + 1):
             for j in range(1, self.K + 1):
                 if i == j:
@@ -38,6 +32,25 @@ class DSWorker:
                     pi[i][j] = samplable.RealV(0.1 / (self.K - 1))
 
     def m_step(self, instances, m):
+        curr_pi = numpy.ndarray(shape=(self.K + 1, self.K + 1), dtype=float, order='C')
+        curr_pi.fill(0)
+        for inst in instances:
+            d = self.worker.get_label_val_for_inst(inst.inst.id, m)
+            if d != 0:
+                for k in range(1, self.K + 1):
+                    curr_pi[k][d] += inst.y_prob_list[m][k].getV()
+        for k in range(1, self.K + 1):
+            s = 0
+            for q in range(1, self.K + 1):
+                s += curr_pi[k][q]
+            if s != 0:
+                for d in range(1, self.K + 1):
+                    self.pi_list[m][k][d].append(curr_pi[k][d] / s)
+            else:
+                for d in range(1, self.K + 1):
+                    self.pi_list[m][k][d].append(self.pi_list[m][k][d].getV())
+
+    def m_step_hard(self, instances, m):
         curr_pi = numpy.ndarray(shape=(self.K + 1, self.K + 1), dtype=int, order='C')
         curr_pi.fill(0)
         for inst in instances:
@@ -55,25 +68,6 @@ class DSWorker:
                 for d in range(1, self.K + 1):
                     self.pi_list[m][k][d].append(self.pi_list[m][k][d].getV())
 
-    def m_step_soft(self, instances, m):
-        curr_pi = numpy.ndarray(shape=(self.K + 1, self.K + 1), dtype=float, order='C')
-        curr_pi.fill(0)
-        for inst in instances:
-            d = self.worker.get_label_val_for_inst(inst.inst.id, m)
-            if d != 0:
-                for k in range (1, self.K + 1):
-                    curr_pi[k][d] += inst.prob_list[m][k].getV()
-        for k in range(1, self.K + 1):
-            s = 0
-            for q in range(1, self.K + 1):
-                s += curr_pi[k][q]
-            if s != 0:
-                for d in range(1, self.K + 1):
-                    self.pi_list[m][k][d].append(curr_pi[k][d] / s)
-            else:
-                for d in range(1, self.K + 1):
-                    self.pi_list[m][k][d].append(self.pi_list[m][k][d].getV())
-
     def print_pis(self):
         for m in range(1, self.M + 1):
             print('pi (' + str(m) + ') of worker ' + str(self.worker.id) + ':')
@@ -82,31 +76,29 @@ class DSWorker:
                     self.pi_list[m][i][j].print_obj()
                 print('')
 
+
 class DSInstance:
 
     def __init__(self, inst):
         self.inst = inst
         self.M = 0
         self.K = 0
-        self.y_list = []
-        self.prob_list = []
-        self.likelihood = []
+        self.y_list = [None]
+        self.y_prob_list = [None]
+        self.likelihood_list = [None]
 
     def initialize(self, M, K):
         self.M = M
         self.K = K
-        self.y_list.append(None)
-        self.prob_list.append(None)
-        self.likelihood.append(None)
         for m in range(1, self.M + 1):
             self.y_list.append(samplable.IntV(0))
             probs = numpy.ndarray(shape=(self.K + 1), dtype=samplable.RealV, order='C')
             for i in range(1, self.K + 1):
                 probs[i] = samplable.RealV(1.0 / self.K)
-            self.prob_list.append(probs)
-            self.likelihood.append(samplable.RealV(0.0))
-        #self.printYs()
-        #self.printProbs()
+            self.y_prob_list.append(probs)
+            self.likelihood_list.append(samplable.RealV(0.0))
+        #self.print_ys()
+        #self.print_y_probs()
 
     def compute_likelihood(self, workers, thetas, m):
         p_k = []
@@ -119,8 +111,8 @@ class DSInstance:
                 else:
                     prod *= w.pi_list[m][k][val].getV()
             p_k.append(prod * thetas[k].getV())
-        self.likelihood[m].append(sum(p_k))
-        return self.likelihood[m].getV()
+        self.likelihood_list[m].append(sum(p_k))
+        return self.likelihood_list[m].getV()
 
     def e_step(self, workers, thetas, m):
         for k in range(1, self.K + 1):
@@ -131,12 +123,15 @@ class DSInstance:
                     continue
                 else:
                     prod *= w.pi_list[m][k][val].getV()
-            self.prob_list[m][k].append(prod * thetas[k].getV())
-        estimated_y = self.compute_estimated_y(m)
-        self.y_list[m].append(estimated_y)
-        #print('inst '+ str(self.inst.id) + ' get estimated y(' + str(m) + ') = '+ str(estimated_y))
+            self.y_prob_list[m][k].append(prod * thetas[k].getV())
+        # uniform
+        sum = 0.0
+        for k in range(1, self.K + 1):
+            sum += self.y_prob_list[m][k].getV()
+        for k in range(1, self.K + 1):
+            self.y_prob_list[m][k].setV(self.y_prob_list[m][k].getV() / sum)
 
-    def e_step_soft(self, workers, thetas, m):
+    def e_step_hard(self, workers, thetas, m):
         for k in range(1, self.K + 1):
             prod = 1.0
             for w in workers:
@@ -145,23 +140,23 @@ class DSInstance:
                     continue
                 else:
                     prod *= w.pi_list[m][k][val].getV()
-            self.prob_list[m][k].append(prod * thetas[k].getV())
-        #uniform
-        sum = 0.0
-        for k in range(1, self.K + 1):
-            sum += self.prob_list[m][k].getV()
-        for k in range(1, self.K + 1):
-            self.prob_list[m][k].setV(self.prob_list[m][k].getV()/sum)
+            self.y_prob_list[m][k].append(prod * thetas[k].getV())
+        estimated_y = self.compute_estimated_y(m)
+        self.y_list[m].append(estimated_y)
+        #print('inst '+ str(self.inst.id) + ' get estimated y(' + str(m) + ') = '+ str(estimated_y))
 
     def compute_estimated_y(self, m, random=False):
         prob = []
         prob.append(None)
         for k in range(1, self.K + 1):
-            prob.append(self.prob_list[m][k].getV())
+            prob.append(self.y_prob_list[m][k].getV())
         maxindex = utils.get_max_index(prob, random)
         return maxindex
 
-    def final_aggregate(self, m):
+    def final_aggregate(self, m, soft=True):
+        if (soft == True):
+            estimated_y = self.compute_estimated_y(m, True)
+            self.y_list[m].append(estimated_y)
         y_val = self.y_list[m].getV()
         # set integrated label
         integrated_label = data.Label(m)
@@ -169,32 +164,22 @@ class DSInstance:
         integrated_label.worker_id = data.Worker.AGGR
         integrated_label.val = y_val
         self.inst.add_integrated_label(integrated_label)
-        #print('instance ' + str(self.inst.id) + ' get integrated label (' + str(m) + ') :' + str(integrated_label.val))
+        print('instance ' + str(self.inst.id) + ' get integrated label (' + str(m) + ') :' + str(integrated_label.val))
 
-    def final_aggregate_soft(self, m):
-        estimated_y = self.compute_estimated_y(m,True)
-        self.y_list[m].append(estimated_y)
-        y_val = self.y_list[m].getV()
-        # set integrated label
-        integrated_label = data.Label(m)
-        integrated_label.inst_id = self.inst.id
-        integrated_label.worker_id = data.Worker.AGGR
-        integrated_label.val = y_val
-        self.inst.add_integrated_label(integrated_label)
-
-    def printYs(self):
+    def print_ys(self):
         print('The estimated class of instance ' + str(self.inst.id) +  ':', end=' ')
         for m in range(1, self.M + 1):
             self.y_list[m].print_obj()
         print('')
 
-    def printProbs(self):
+    def print_y_probs(self):
         print('The probabilities of classes of instance ' + str(self.inst.id) + ' >>>')
         for m in range(1, self.M + 1):
             print('label (' + str(m)+ '):', end=' ')
             for k in range(1, self.K + 1):
-                self.prob_list[m][k].print_obj()
+                self.y_prob_list[m][k].print_obj()
             print('')
+
 
 class DSModel(model.Model):
     """
@@ -208,7 +193,7 @@ class DSModel(model.Model):
         self.J = 0
         self.K = 0
         self.M = 0 # M is the number of label ids
-        self.theta_list = []
+        self.theta_list = [None]
         self.maxround = maxrnd
 
     def initialize(self, dataset):
@@ -229,7 +214,6 @@ class DSModel(model.Model):
             ds_worker = DSWorker(worker)
             ds_worker.initialize(self.M, self.K)
             self.workers.append(ds_worker)
-        self.theta_list.append(None)
         for m in range(1, self.M + 1):
             thetas = numpy.ndarray(shape=(self.K+1), dtype=samplable.RealV, order='C')
             for i in range(1, self.K + 1):
@@ -255,11 +239,26 @@ class DSModel(model.Model):
         for inst in self.instances:
             inst.e_step(self.workers, self.theta_list[m], m)
 
-    def e_step_soft(self, m):
+    def e_step_hard(self, m):
         for inst in self.instances:
-            inst.e_step_soft(self.workers, self.theta_list[m], m)
+            inst.e_step_hard(self.workers, self.theta_list[m], m)
 
     def m_step(self, m):
+        # calculate theta
+        numlist = []
+        for k in range(0, self.K + 1):
+            numlist.append(0.0)
+        for inst in self.instances:
+            for k in range(1, self.K + 1):
+                numlist[k] += inst.y_prob_list[m][k].getV()
+        s = sum(numlist)
+        for k in range(1, self.K + 1):
+            self.theta_list[m][k].append(numlist[k] / s)
+        # self.print_theta()
+        for w in self.workers:
+            w.m_step(self.instances, m)
+
+    def m_step_hard(self, m):
         # calculate theta
         numlist = []
         for k in range(0, self.K + 1):
@@ -271,66 +270,34 @@ class DSModel(model.Model):
             self.theta_list[m][k].append(numlist[k] / s)
         #self.print_theta()
         for w in self.workers:
-            w.m_step(self.instances, m)
+            w.m_step_hard(self.instances, m)
 
-    def m_step_soft(self, m):
-        # calculate theta
-        numlist = []
-        for k in range(0, self.K + 1):
-            numlist.append(0.0)
-        for inst in self.instances:
-            for k in range (1, self.K + 1):
-                numlist[k] += inst.prob_list[m][k].getV()
-        s = sum(numlist)
-        for k in range(1, self.K + 1):
-            self.theta_list[m][k].append(numlist[k] / s)
-        #self.print_theta()
-        for w in self.workers:
-            w.m_step_soft(self.instances, m)
-
-    def em(self, m):
+    def em(self, m, soft):
         count = 1
         last_likelihood = 0
         curr_likehihood = self.loglikelihood(m)
         print('DS on label (' + str(m) + ') initial log-likelihood = ' + str(curr_likehihood))
         while ((count <= self.maxround) and (abs(curr_likehihood - last_likelihood) > model.Model.LIKELIHOOD_DIFF)):
-            self.e_step(m)
-            self.m_step(m)
+            if (soft == True):
+                self.e_step(m)
+                self.m_step(m)
+            else:
+                self.e_step_hard(m)
+                self.m_step_hard(m)
             last_likelihood = curr_likehihood
             curr_likehihood = self.loglikelihood(m)
             print('DS on label (' + str(m) + ') round (' + str(count) +') log-likelihood = ' + str(curr_likehihood))
             count += 1
 
-    def em_soft(self, m):
-        count = 1
-        last_likelihood = 0
-        curr_likehihood = self.loglikelihood(m)
-        print('DS on label (' + str(m) + ') initial log-likelihood = ' + str(curr_likehihood))
-        while ((count <= self.maxround) and (abs(curr_likehihood - last_likelihood) > model.Model.LIKELIHOOD_DIFF)):
-            self.e_step_soft(m)
-            self.m_step_soft(m)
-            last_likelihood = curr_likehihood
-            curr_likehihood = self.loglikelihood(m)
-            print('DS on label (' + str(m) + ') round (' + str(count) + ') log-likelihood = ' + str(curr_likehihood))
-            count += 1
-
-    def final_aggregate(self, m):
+    def final_aggregate(self, m, soft):
         for inst in self.instances:
-            inst.final_aggregate(m)
+            inst.final_aggregate(m, soft)
 
-    def final_aggregate_soft(self, m):
-        for inst in self.instances:
-            inst.final_aggregate_soft(m)
-
-    def infer(self, dataset, soft=False):
+    def infer(self, dataset, soft=True):
         self.initialize(dataset)
         for m in range(1, self.M + 1):
-            if soft==False:
-                self.em(m)
-                self.final_aggregate(m)
-            else:
-                self.em_soft(m)
-                self.final_aggregate_soft(m)
+            self.em(m, soft)
+            self.final_aggregate(m, soft)
 
     def print_theta(self):
         for m in range(1, self.M + 1):
