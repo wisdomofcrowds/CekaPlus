@@ -4,7 +4,7 @@ class Model:
     """
     the base class for inference model
     """
-    LIKELIHOOD_DIFF = 0.1
+    LIKELIHOOD_DIFF = 1
 
     def __init__(self):
         pass
