@@ -98,6 +98,7 @@ class OCMCInstance:
         return self.likelihood_list[m].getV()
 
     def e_step(self, workers, thetas, m):
+        sum = 0.0
         for k in range(1, self.K + 1):
             prod = 1.0
             for w in workers:
@@ -109,10 +110,8 @@ class OCMCInstance:
                 else:
                     prod *= ((1.0 - w.rho_list[m].getV()) / (self.K - 1))
             self.y_prob_list[m][k].append(prod * thetas[k].getV())
-        # uniform
-        sum = 0.0
-        for k in range(1, self.K + 1):
             sum += self.y_prob_list[m][k].getV()
+        # uniform
         for k in range(1, self.K + 1):
             self.y_prob_list[m][k].setV(self.y_prob_list[m][k].getV() / sum)
 
