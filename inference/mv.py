@@ -11,7 +11,7 @@ class MVModel(inference.model.Model):
     def __init__(self):
         inference.model.Model.__init__(self)
 
-    def infer(self, dataset):
+    def infer(self, dataset, soft=False):
         num_instance = dataset.get_instance_size()
         for inst_id in range(1, num_instance + 1):
             inst = dataset.get_instance(inst_id)
