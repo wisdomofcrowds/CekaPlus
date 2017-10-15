@@ -9,6 +9,7 @@ import inference.ds
 import inference.mmli
 import inference.mmld
 import inference.ocmc
+import inference.doc
 
 #in_resp_path = 'D:/Github/datasets/aircrowd6.response.txt'
 #in_gold_path = 'D:/Github/datasets/aircrowd6.gold.txt'
@@ -46,7 +47,7 @@ for label_id in range(1, num_label + 1):
 print('total acc: ' + str(eval.get_accuracy()))
 
 maxround = 20
-soft = False
+soft = True
 
 ds = inference.ds.DSModel(maxround)
 ds.infer(dataset, soft)
@@ -63,6 +64,7 @@ num_label = dataset.get_label_id_size()
 for label_id in range(1, num_label + 1):
     print('OCMC acc on label (' + str(label_id) +'): '+ str(eval.get_accuracy_on_label(label_id)))
 print('OCMC total acc: ' + str(eval.get_accuracy()))
+
 
 mmli = inference.mmli.MMLIModel(maxround)
 mmli.infer(dataset, soft)
@@ -87,3 +89,18 @@ for label_id in range(1, num_label + 1):
     print('MMLD acc on label (' + str(label_id) +'): '+ str(eval.get_accuracy_on_label(label_id)))
 print('MMLD total acc: ' + str(eval.get_accuracy()))
 
+R=4
+doc = inference.doc.DOCModel(R, maxround)
+omega = [None]
+rlist = core.utils.gen_rand_sum_one(R)
+print(rlist)
+for r in rlist:
+    omega.append(r)
+doc.set_omega(omega)
+doc.set_converge_rate(0.05)
+doc.infer(dataset, soft)
+eval = core.perf.Evaluation(dataset)
+num_label = dataset.get_label_id_size()
+for label_id in range(1, num_label + 1):
+    print('DOC acc on label (' + str(label_id) +'): '+ str(eval.get_accuracy_on_label(label_id)))
+print('DOC total acc: ' + str(eval.get_accuracy()))
