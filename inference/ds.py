@@ -2,6 +2,7 @@
 
 import numpy
 import math
+import random
 from core import data, samplable, utils
 from inference import model
 
@@ -11,15 +12,14 @@ class DSWorker:
         self.worker = worker
         self.M = 0
         self.K = 0
-        self.pi_list = []
+        self.pi_list = [None]
 
     def initialize(self, M, K):
         self.M = M
         self.K = K
-        self.pi_list.append(None)
         for m in range(1, self.M + 1):
             pi = numpy.ndarray(shape=(self.K + 1, self.K + 1), dtype=samplable.RealV, order='C')
-            self.initialize_pi(pi)
+            self.random_initialize_pi(pi, 0.7, 0.9)
             self.pi_list.append(pi)
         #self.print_pis()
 
@@ -30,6 +30,23 @@ class DSWorker:
                     pi[i][j] = samplable.RealV(0.9)
                 else:
                     pi[i][j] = samplable.RealV(0.1 / (self.K - 1))
+
+    def random_initialize_pi(self, pi, diagonal_low, diagonal_high):
+        # we get K diagonal elements randomly in the range of low - high
+        diagonal = [None]
+        for i in range(1, self.K + 1):
+            val = random.uniform(diagonal_low, diagonal_high)
+            diagonal.append(val)
+        for i in range(1, self.K + 1):
+            remainder = 1.0 - diagonal[i]
+            parts = utils.split_val_rand(remainder, self.K - 1)
+            parts_index = 0
+            for j in range(1, self.K + 1):
+                if i == j:
+                    pi[i][j] = samplable.RealV(diagonal[i])
+                else:
+                    pi[i][j] = samplable.RealV(parts[parts_index])
+                    parts_index += 1
 
     def m_step(self, instances, m):
         curr_pi = numpy.ndarray(shape=(self.K + 1, self.K + 1), dtype=float, order='C')

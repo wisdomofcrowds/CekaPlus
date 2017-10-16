@@ -108,3 +108,27 @@ def split_val_rand(val, n):
     for i in range (0, n):
         parts[i] = parts[i]*val/s
     return parts
+
+def gen_rand_sum_one_in_range(size, low, high, try_count=100000):
+    """
+    generate size random numbers that sum up to one
+    :param size: number of random numbers
+    :param low: lower bound
+    :param high: upper bound
+    :try_count: the number of trying
+    :return: list of numbers
+    """
+    count = 0
+    while (count < try_count):
+        lst = []
+        sum = 0.0
+        for i in range(0, size-1):
+            r = numpy.random.uniform(low, high)
+            sum += r
+            lst.append(r)
+        remainder = 1 - sum;
+        if (remainder >= low) and (remainder <= high):
+            lst.append(remainder)
+            return lst
+        count += 1
+    return None
