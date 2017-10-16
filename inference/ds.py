@@ -4,7 +4,7 @@ import numpy
 import math
 import random
 from core import data, samplable, utils
-from inference import model
+from inference import model, mv
 
 class DSWorker:
 
@@ -47,6 +47,12 @@ class DSWorker:
                 else:
                     pi[i][j] = samplable.RealV(parts[parts_index])
                     parts_index += 1
+
+    def set_pi_list(self, pis):
+        for m in range(1, self.M + 1):
+            for i in range(1, self.K + 1):
+                for j in range(1, self.K + 1):
+                    self.pi_list[m][i][j].setV(pis[m][i][j].getV())
 
     def m_step(self, instances, m):
         curr_pi = numpy.ndarray(shape=(self.K + 1, self.K + 1), dtype=float, order='C')
@@ -211,6 +217,7 @@ class DSModel(model.Model):
         self.M = 0 # M is the number of label ids
         self.theta_list = [None]
         self.maxround = maxrnd
+        self.mv_initialize_paremeter = False
 
     def initialize(self, dataset):
         self.M = dataset.get_label_id_size()
@@ -235,6 +242,17 @@ class DSModel(model.Model):
             for i in range(1, self.K + 1):
                 thetas[i] = samplable.RealV(1.0 / self.K)
             self.theta_list.append(thetas)
+
+    def mv_initialize(self, dataset):
+        print('DS uses MV to initialize parameters...')
+        mvmodel = mv.MVModel()
+        mvmodel.infer(dataset)
+        worker_pos = 0
+        for mv_worker in mvmodel.workers:
+            self.workers[worker_pos].set_pi_list(mv_worker.pi_list)
+        for m in range(1, self.M + 1):
+            for k in range(1, self.K + 1):
+                self.theta_list[m][k].setV(mvmodel.theta_list[m][k].getV())
 
     def initialK(self, dataset):
         maxK = 0
@@ -311,6 +329,8 @@ class DSModel(model.Model):
 
     def infer(self, dataset, soft=True):
         self.initialize(dataset)
+        if self.mv_initialize_paremeter == True:
+            self.mv_initialize(dataset)
         for m in range(1, self.M + 1):
             self.em(m, soft)
             self.final_aggregate(m, soft)

@@ -57,7 +57,7 @@ class MVWorker:
                 else:
                     for d in range(1, self.K + 1):
                         self.pi_list[m][k][d].append(self.pi_list[m][k][d].getV())
-        self.print_pis()
+        #self.print_pis()
 
     def print_pis(self):
         for m in range(1, self.M + 1):
