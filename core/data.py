@@ -118,6 +118,14 @@ class Instance:
             return 1
         return 0
 
+    def all_match_integrated_true(self):
+        id_list = self.get_label_id_list()
+        for label_id in id_list:
+            if self.equal_integrated_true(label_id) == 0:
+                return 0
+        return 1
+
+
 class Dataset:
     """
     The base class of a data set

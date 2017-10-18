@@ -44,7 +44,7 @@ eval = core.perf.Evaluation(dataset)
 num_label = dataset.get_label_id_size()
 for label_id in range(1, num_label + 1):
     print('acc on label (' + str(label_id) +'): '+ str(eval.get_accuracy_on_label(label_id)))
-print('total acc: ' + str(eval.get_accuracy()))
+print('MV acc: ' + str(eval.get_accuracy()) + ' subset acc: ' + str(eval.get_subset_accuracy()))
 
 maxround = 20
 soft = True
@@ -55,7 +55,7 @@ eval = core.perf.Evaluation(dataset)
 num_label = dataset.get_label_id_size()
 for label_id in range(1, num_label + 1):
     print('DS acc on label (' + str(label_id) +'): '+ str(eval.get_accuracy_on_label(label_id)))
-print('DS total acc: ' + str(eval.get_accuracy()))
+print('DS acc: ' + str(eval.get_accuracy()) + ' subset acc: ' + str(eval.get_subset_accuracy()))
 
 ocmc = inference.ocmc.OCMCModel(maxround)
 ocmc.infer(dataset, soft)
@@ -63,7 +63,7 @@ eval = core.perf.Evaluation(dataset)
 num_label = dataset.get_label_id_size()
 for label_id in range(1, num_label + 1):
     print('OCMC acc on label (' + str(label_id) +'): '+ str(eval.get_accuracy_on_label(label_id)))
-print('OCMC total acc: ' + str(eval.get_accuracy()))
+print('OCMC acc: ' + str(eval.get_accuracy()) + ' subset acc: ' + str(eval.get_subset_accuracy()))
 
 
 mmli = inference.mmli.MMLIModel(maxround)
@@ -72,7 +72,7 @@ eval = core.perf.Evaluation(dataset)
 num_label = dataset.get_label_id_size()
 for label_id in range(1, num_label + 1):
     print('MMLI acc on label (' + str(label_id) +'): '+ str(eval.get_accuracy_on_label(label_id)))
-print('MMLI total acc: ' + str(eval.get_accuracy()))
+print('MMLI acc: ' + str(eval.get_accuracy()) + ' subset acc: ' + str(eval.get_subset_accuracy()))
 
 R=4
 mmld = inference.mmld.MMLDModel(R, maxround)
@@ -88,7 +88,7 @@ eval = core.perf.Evaluation(dataset)
 num_label = dataset.get_label_id_size()
 for label_id in range(1, num_label + 1):
     print('MMLD acc on label (' + str(label_id) +'): '+ str(eval.get_accuracy_on_label(label_id)))
-print('MMLD total acc: ' + str(eval.get_accuracy()))
+print('MMLD acc: ' + str(eval.get_accuracy()) + ' subset acc: ' + str(eval.get_subset_accuracy()))
 
 doc = inference.doc.DOCModel(R, maxround)
 doc.set_omega(omega)
@@ -98,4 +98,4 @@ eval = core.perf.Evaluation(dataset)
 num_label = dataset.get_label_id_size()
 for label_id in range(1, num_label + 1):
     print('DOC acc on label (' + str(label_id) +'): '+ str(eval.get_accuracy_on_label(label_id)))
-print('DOC total acc: ' + str(eval.get_accuracy()))
+print('DOC acc: ' + str(eval.get_accuracy()) + ' subset acc: ' + str(eval.get_subset_accuracy()))
