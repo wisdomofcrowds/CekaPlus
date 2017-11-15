@@ -256,7 +256,7 @@ class MMLDInstance:
                 self.y_list[m].append(self.y_combination[estimated_pos][m])
             estimated_z_pos = self.compute_estimated_z(True)
             self.z.append(estimated_z_pos)
-        print('instance ' + str(self.inst.id) + ' get z = ' + str(self.z.getV()))
+        #print('instance ' + str(self.inst.id) + ' get z = ' + str(self.z.getV()))
         for m in range(1, self.M + 1):
             y_val = self.y_list[m].getV()
             # set integrated label
