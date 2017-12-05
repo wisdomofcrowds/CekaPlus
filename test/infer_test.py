@@ -23,8 +23,11 @@ import inference.doc
 #in_resp_path = 'D:/Github/datasets/valence7.response.txt'
 #in_gold_path = 'D:/Github/datasets/valence7.gold.txt'
 
-in_resp_path = 'D:/Github/datasets/synth.resp'
-in_gold_path = 'D:/Github/datasets/synth.gold'
+#in_resp_path = 'D:/Github/datasets/synth.resp'
+#in_gold_path = 'D:/Github/datasets/synth.gold'
+
+in_resp_path = 'D:/Github/datasets/emotions/emotions-train-f.resp'
+in_gold_path = 'D:/Github/datasets/emotions/emotions-train-f.gold'
 
 #in_resp_path = 'D:/zcrom/Output/affective-ml.resp'
 #in_gold_path = 'D:/zcrom/Output/affective-ml.gold'
@@ -74,7 +77,7 @@ for label_id in range(1, num_label + 1):
     print('MMLI acc on label (' + str(label_id) +'): '+ str(eval.get_accuracy_on_label(label_id)))
 print('MMLI acc: ' + str(eval.get_accuracy()) + ' subset acc: ' + str(eval.get_subset_accuracy()))
 
-R=4
+R=5
 mmld = inference.mmld.MMLDModel(R, maxround)
 omega = [None]
 rlist = core.utils.gen_rand_sum_one(R)
@@ -82,7 +85,7 @@ print(rlist)
 for r in rlist:
     omega.append(r)
 mmld.set_omega(omega)
-mmld.set_converge_rate(0.01)
+mmld.set_converge_rate(0.001)
 mmld.infer(dataset, soft)
 eval = core.perf.Evaluation(dataset)
 num_label = dataset.get_label_id_size()
@@ -92,7 +95,7 @@ print('MMLD acc: ' + str(eval.get_accuracy()) + ' subset acc: ' + str(eval.get_s
 
 doc = inference.doc.DOCModel(R, maxround)
 doc.set_omega(omega)
-doc.set_converge_rate(0.01)
+doc.set_converge_rate(0.005)
 doc.infer(dataset, soft)
 eval = core.perf.Evaluation(dataset)
 num_label = dataset.get_label_id_size()
