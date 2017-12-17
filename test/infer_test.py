@@ -10,6 +10,7 @@ import inference.mmli
 import inference.mmld
 import inference.ocmc
 import inference.doc
+import inference.ibcc
 
 #in_resp_path = 'D:/Github/datasets/aircrowd6.response.txt'
 #in_gold_path = 'D:/Github/datasets/aircrowd6.gold.txt'
@@ -23,11 +24,11 @@ import inference.doc
 #in_resp_path = 'D:/Github/datasets/valence7.response.txt'
 #in_gold_path = 'D:/Github/datasets/valence7.gold.txt'
 
-#in_resp_path = 'D:/Github/datasets/synth.resp'
-#in_gold_path = 'D:/Github/datasets/synth.gold'
+in_resp_path = 'D:/Github/datasets/synth.resp'
+in_gold_path = 'D:/Github/datasets/synth.gold'
 
-in_resp_path = 'D:/Github/datasets/emotions/emotions-train-f.resp'
-in_gold_path = 'D:/Github/datasets/emotions/emotions-train-f.gold'
+#in_resp_path = 'D:/Github/datasets/emotions/emotions-train-f.resp'
+#in_gold_path = 'D:/Github/datasets/emotions/emotions-train-f.gold'
 
 #in_resp_path = 'D:/zcrom/Output/affective-ml.resp'
 #in_gold_path = 'D:/zcrom/Output/affective-ml.gold'
@@ -46,9 +47,18 @@ mv.infer(dataset)
 eval = core.perf.Evaluation(dataset)
 num_label = dataset.get_label_id_size()
 for label_id in range(1, num_label + 1):
-    print('acc on label (' + str(label_id) +'): '+ str(eval.get_accuracy_on_label(label_id)))
+    print('MV acc on label (' + str(label_id) +'): '+ str(eval.get_accuracy_on_label(label_id)))
 print('MV acc: ' + str(eval.get_accuracy()) + ' subset acc: ' + str(eval.get_subset_accuracy()))
 
+ibcc = inference.ibcc.IBCCModel()
+ibcc.sampling_infer(dataset, 10, 5)
+eval = core.perf.Evaluation(dataset)
+num_label = dataset.get_label_id_size()
+for label_id in range(1, num_label + 1):
+    print('IBCC acc on label (' + str(label_id) +'): '+ str(eval.get_accuracy_on_label(label_id)))
+print('IBCC acc: ' + str(eval.get_accuracy()) + ' subset acc: ' + str(eval.get_subset_accuracy()))
+
+"""
 maxround = 20
 soft = True
 
@@ -102,3 +112,4 @@ num_label = dataset.get_label_id_size()
 for label_id in range(1, num_label + 1):
     print('DOC acc on label (' + str(label_id) +'): '+ str(eval.get_accuracy_on_label(label_id)))
 print('DOC acc: ' + str(eval.get_accuracy()) + ' subset acc: ' + str(eval.get_subset_accuracy()))
+"""

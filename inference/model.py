@@ -15,3 +15,6 @@ class Model:
 
     def infer(self, dataset, soft=True):
         pass
+
+    def sampling_infer(self, dataset, maxround, begin):
+        pass
