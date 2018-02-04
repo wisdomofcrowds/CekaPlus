@@ -6,8 +6,8 @@ import core.perf
 import core.utils
 import inference.mv
 import inference.ds
-import inference.mmli
-import inference.mmld
+import inference.mcmli
+import inference.mcmld
 import inference.ocmc
 import inference.doc
 import inference.ibcc
@@ -24,14 +24,20 @@ import inference.ibcc
 #in_resp_path = 'D:/Github/datasets/valence7.response.txt'
 #in_gold_path = 'D:/Github/datasets/valence7.gold.txt'
 
-in_resp_path = 'D:/Github/datasets/synth.resp'
-in_gold_path = 'D:/Github/datasets/synth.gold'
+#in_resp_path = 'D:/Github/datasets/synth.resp'
+#in_gold_path = 'D:/Github/datasets/synth.gold'
 
-#in_resp_path = 'D:/Github/datasets/emotions/emotions-train-f.resp'
-#in_gold_path = 'D:/Github/datasets/emotions/emotions-train-f.gold'
+#in_resp_path = 'D:/Github/datasets/yeast/yeast-train.resp'
+#in_gold_path = 'D:/Github/datasets/yeast/yeast-train.gold'
+
+in_resp_path = 'D:/Github/datasets/emotions/emotions-train.resp'
+in_gold_path = 'D:/Github/datasets/emotions/emotions-train.gold'
 
 #in_resp_path = 'D:/zcrom/Output/affective-ml.resp'
 #in_gold_path = 'D:/zcrom/Output/affective-ml.gold'
+
+#in_resp_path = 'D:/zcrom/Output/affective-mlk4.resp'
+#in_gold_path = 'D:/zcrom/Output/affective-mlk4.gold'
 
 #out_resp_path = 'D:/Github/datasets/aircrowd6.resp'
 #out_gold_path = 'D:/Github/datasets/aircrowd6.gold'
@@ -40,7 +46,12 @@ dataset = core.cio.load_file(in_resp_path, in_gold_path)
 map_path  = os.path.splitext(in_resp_path)[0] + '.map'
 core.cio.save_map_file(dataset, map_path)
 
+coefficient = dataset.get_correlation_coefficient_by_PCA()
+print('coefficient = ' + str(coefficient))
+
 #core.cio.save_file(dataset, out_resp_path, out_gold_path)
+maxround = 20
+soft = True
 
 mv = inference.mv.MVModel()
 mv.infer(dataset)
@@ -50,6 +61,7 @@ for label_id in range(1, num_label + 1):
     print('MV acc on label (' + str(label_id) +'): '+ str(eval.get_accuracy_on_label(label_id)))
 print('MV acc: ' + str(eval.get_accuracy()) + ' subset acc: ' + str(eval.get_subset_accuracy()))
 
+
 ibcc = inference.ibcc.IBCCModel()
 ibcc.sampling_infer(dataset, 10, 5)
 eval = core.perf.Evaluation(dataset)
@@ -57,10 +69,6 @@ num_label = dataset.get_label_id_size()
 for label_id in range(1, num_label + 1):
     print('IBCC acc on label (' + str(label_id) +'): '+ str(eval.get_accuracy_on_label(label_id)))
 print('IBCC acc: ' + str(eval.get_accuracy()) + ' subset acc: ' + str(eval.get_subset_accuracy()))
-
-"""
-maxround = 20
-soft = True
 
 ds = inference.ds.DSModel(maxround)
 ds.infer(dataset, soft)
@@ -79,29 +87,29 @@ for label_id in range(1, num_label + 1):
 print('OCMC acc: ' + str(eval.get_accuracy()) + ' subset acc: ' + str(eval.get_subset_accuracy()))
 
 
-mmli = inference.mmli.MMLIModel(maxround)
-mmli.infer(dataset, soft)
+mcmli = inference.mcmli.MCMLIModel(maxround)
+mcmli.infer(dataset, soft)
 eval = core.perf.Evaluation(dataset)
 num_label = dataset.get_label_id_size()
 for label_id in range(1, num_label + 1):
-    print('MMLI acc on label (' + str(label_id) +'): '+ str(eval.get_accuracy_on_label(label_id)))
-print('MMLI acc: ' + str(eval.get_accuracy()) + ' subset acc: ' + str(eval.get_subset_accuracy()))
+    print('MCMLI acc on label (' + str(label_id) +'): '+ str(eval.get_accuracy_on_label(label_id)))
+print('MCMLI acc: ' + str(eval.get_accuracy()) + ' subset acc: ' + str(eval.get_subset_accuracy()))
 
-R=5
-mmld = inference.mmld.MMLDModel(R, maxround)
+R=4
+mcmld = inference.mcmld.MCMLDModel(R, 20)
 omega = [None]
 rlist = core.utils.gen_rand_sum_one(R)
 print(rlist)
 for r in rlist:
     omega.append(r)
-mmld.set_omega(omega)
-mmld.set_converge_rate(0.001)
-mmld.infer(dataset, soft)
+mcmld.set_omega(omega)
+mcmld.set_converge_rate(0.005)
+mcmld.infer(dataset, soft)
 eval = core.perf.Evaluation(dataset)
 num_label = dataset.get_label_id_size()
 for label_id in range(1, num_label + 1):
-    print('MMLD acc on label (' + str(label_id) +'): '+ str(eval.get_accuracy_on_label(label_id)))
-print('MMLD acc: ' + str(eval.get_accuracy()) + ' subset acc: ' + str(eval.get_subset_accuracy()))
+    print('MCMLD acc on label (' + str(label_id) +'): '+ str(eval.get_accuracy_on_label(label_id)))
+print('MCMLD acc: ' + str(eval.get_accuracy()) + ' subset acc: ' + str(eval.get_subset_accuracy()))
 
 doc = inference.doc.DOCModel(R, maxround)
 doc.set_omega(omega)
@@ -112,4 +120,3 @@ num_label = dataset.get_label_id_size()
 for label_id in range(1, num_label + 1):
     print('DOC acc on label (' + str(label_id) +'): '+ str(eval.get_accuracy_on_label(label_id)))
 print('DOC acc: ' + str(eval.get_accuracy()) + ' subset acc: ' + str(eval.get_subset_accuracy()))
-"""
