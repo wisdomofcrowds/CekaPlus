@@ -316,12 +316,12 @@ class MCMLDModel(model.Model):
         print('K = ' + str(self.K))
         for i in range(1, self.I + 1):
             inst = dataset.get_instance(i)
-            mmld_inst = MMLDInstance(inst)
+            mmld_inst = MCMLDInstance(inst)
             mmld_inst.initialize(self.M, self.K, self.R)
             self.instances.append(mmld_inst)
         for w in range(1, self.J + 1):
             worker = dataset.get_worker(w)
-            mmld_worker = MMLDWorker(worker)
+            mmld_worker = MCMLDWorker(worker)
             mmld_worker.initialize(self.M, self.K, self.R)
             self.workers.append(mmld_worker)
         for r in  range(1, self.R + 1):
@@ -439,7 +439,7 @@ class MCMLDModel(model.Model):
         count = 1
         last_likelihood = -999999999
         curr_likehihood = self.loglikelihood()
-        print('MMLD initial log-likelihood = ' + str(curr_likehihood))
+        print('MCMLD initial log-likelihood = ' + str(curr_likehihood))
         while ((count <= self.maxround) and (abs(curr_likehihood - last_likelihood) / abs(last_likelihood) > self.converge_rate)):
             if (soft == True):
                 self.e_step()
@@ -449,7 +449,7 @@ class MCMLDModel(model.Model):
                 self.m_step_hard()
             last_likelihood = curr_likehihood
             curr_likehihood = self.loglikelihood()
-            print('MMLD round (' + str(count) + ') log-likelihood = ' + str(curr_likehihood))
+            print('MCMLD round (' + str(count) + ') log-likelihood = ' + str(curr_likehihood))
             count += 1
         self.final_aggregate(soft)
 
