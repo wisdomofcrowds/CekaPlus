@@ -53,12 +53,16 @@ class datagen:
             policy.set_label_info(self.dataset.label_info_dict)
             self.dataset.get_worker(w).labeling(policy)
 
+    def create_correl_dataset(self):
+        self.create_instances()
+        self.dataset.set_true_label_for_correl(self.inst_num, self.label_num)
+
 def scenario1():
     generator = datagen(True)
     generator.inst_num = 100 # number of instances
     generator.worker_num = 10 # number of workers
-    generator.label_num = 6# number of label
-    num_val = 2# each label has K values
+    generator.label_num = 8# number of label
+    num_val = 4# each label has K values
 
     # correct rate of workers are uniformed distributed in [0.6, 0.8]
     correct_rates = numpy.random.uniform(0.5, 0.6, generator.worker_num)
@@ -69,6 +73,17 @@ def scenario1():
     out_gold_path = 'D:/Github/datasets/synth.gold'
     core.cio.save_file(generator.dataset, out_resp_path, out_gold_path)
 
-scenario1()
+def correl():
+    generator = datagen(True)
+    generator.inst_num = 600
+    generator.label_num = 5
+
+    generator.create_correl_dataset()
+
+    out_gold_path = 'D:/Github/datasets/correl.gold'
+    core.cio.save_file(generator.dataset, None, out_gold_path)
+
+#scenario1()
+correl()
 
 

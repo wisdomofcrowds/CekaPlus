@@ -120,3 +120,44 @@ class SimDataset(core.data.Dataset):
                     count += 1
                     print(str(count) + '. inst ('+str(e)+') add label ('+str(label_id)+') true value (' + str(val)+')', end='\n')
         print(str(count) + ' true labels added', end='\n')
+
+    def set_true_label_for_correl(self, inst_num, label_num):
+        inst_ids2 = [x for x in range(1, inst_num + 1)]
+        inst_ids2 = numpy.random.permutation(inst_ids2)
+        inst_ids4 = [x for x in range(1, inst_num + 1)]
+        inst_ids4 = numpy.random.permutation(inst_ids4)
+        for e in range(1, inst_num + 1):
+            inst = self.get_instance(e)
+            for label_id in range(1, label_num + 1):
+                label = SimLabel(label_id)
+                label.inst_id = e
+                label.worker_id = core.data.Worker.GOLD
+                label.val = 1
+                inst.add_true_label(label)
+                self.add_label_info(label_id, 1)
+        for index in range(0, inst_num):
+            e1 = self.get_instance(index + 1)
+            if index < 200:
+                e2 = self.get_instance(inst_ids2[index])
+                e4 = self.get_instance(inst_ids4[index])
+                e2.get_true_label_set()[2].val = 1
+                e4.get_true_label_set()[4].val = 1
+                e1.get_true_label_set()[1].val = 1
+                e1.get_true_label_set()[3].val = 2
+                e1.get_true_label_set()[5].val = 3
+            elif index >= 200 and index < 400:
+                e2 = self.get_instance(inst_ids2[index])
+                e4 = self.get_instance(inst_ids4[index])
+                e2.get_true_label_set()[2].val = 2
+                e4.get_true_label_set()[4].val = 2
+                e1.get_true_label_set()[1].val = 2
+                e1.get_true_label_set()[3].val = 3
+                e1.get_true_label_set()[5].val = 1
+            else:
+                e2 = self.get_instance(inst_ids2[index])
+                e4 = self.get_instance(inst_ids4[index])
+                e2.get_true_label_set()[2].val = 3
+                e4.get_true_label_set()[4].val = 3
+                e1.get_true_label_set()[1].val = 3
+                e1.get_true_label_set()[3].val = 1
+                e1.get_true_label_set()[5].val = 2
