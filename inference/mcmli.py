@@ -240,12 +240,12 @@ class MCMLIModel(model.Model):
         print('K = ' + str(self.K))
         for i in range(1, self.I + 1):
             inst = dataset.get_instance(i)
-            mmli_inst = MMLIInstance(inst)
+            mmli_inst = MCMLIInstance(inst)
             mmli_inst.initialize(self.M, self.K)
             self.instances.append(mmli_inst)
         for w in range(1, self.J + 1):
             worker = dataset.get_worker(w)
-            mmli_worker = MMLIWorker(worker)
+            mmli_worker = MCMLIWorker(worker)
             mmli_worker.initialize(self.M, self.K)
             self.workers.append(mmli_worker)
         for m in range(1, self.M + 1):
@@ -320,7 +320,7 @@ class MCMLIModel(model.Model):
         count = 1
         last_likelihood = -999999999
         curr_likehihood = self.loglikelihood()
-        print('MMLI initial log-likelihood = ' + str(curr_likehihood))
+        print('MCMLI initial log-likelihood = ' + str(curr_likehihood))
         while ((count <= self.maxround) and (abs(curr_likehihood - last_likelihood) / abs(last_likelihood) > self.converge_rate)):
             if (soft==True):
                 self.e_step()
@@ -330,7 +330,7 @@ class MCMLIModel(model.Model):
                 self.m_step_hard()
             last_likelihood = curr_likehihood
             curr_likehihood = self.loglikelihood()
-            print('MMLI round (' + str(count) + ') log-likelihood = ' + str(curr_likehihood))
+            print('MCMLI round (' + str(count) + ') log-likelihood = ' + str(curr_likehihood))
             count += 1
         self.final_aggregate(soft)
 
