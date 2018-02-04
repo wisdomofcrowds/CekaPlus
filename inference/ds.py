@@ -19,7 +19,8 @@ class DSWorker:
         self.K = K
         for m in range(1, self.M + 1):
             pi = numpy.ndarray(shape=(self.K + 1, self.K + 1), dtype=samplable.RealV, order='C')
-            self.random_initialize_pi(pi, 0.7, 0.9)
+            #self.random_initialize_pi(pi, 0.6, 0.8)
+            self.initialize_pi(pi)
             self.pi_list.append(pi)
         #self.print_pis()
 
