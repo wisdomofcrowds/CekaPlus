@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+import numpy
+import sklearn.decomposition
+
 class Label:
     """
     The base class of Label
@@ -96,6 +99,12 @@ class Instance:
     def get_noisy_labels(self, label_id):
         return  self.sorted_label_dicts[label_id]
 
+    def get_noisy_label(self, label_id, worker_id):
+        labels = self.sorted_label_dicts[label_id]
+        for l in labels:
+            if (l.worker_id == worker_id):
+                return l
+
     def add_integrated_label(self, label):
         if label.id in self.intg_label_dict:
             self.intg_label_dict[label.id] = label
@@ -125,6 +134,12 @@ class Instance:
                 return 0
         return 1
 
+    def get_worker_id_set(self):
+        s = set()
+        for (k, v) in self.sorted_label_dicts.items():
+            for l in v:
+                s.add(l.worker_id)
+        return s
 
 class Dataset:
     """
@@ -260,3 +275,30 @@ class Dataset:
 
     def get_label_val_size(self, label_id):
         return len(self.label_info_dict[label_id])
+
+    def get_correlation_coefficient_by_PCA(self):
+        row_num = 0
+        for (k, v) in self.inst_dict.items():
+            s = v.get_worker_id_set()
+            row_num += len(s)
+        num_labels = self.get_label_id_size()
+        correlation = numpy.ndarray(shape=(row_num, num_labels), dtype=float, order='C')
+        correlation.fill(0)
+        r = 0
+        for (k, v) in self.inst_dict.items():
+            s = v.get_worker_id_set()
+            for worker_id in s:
+                for label_id in range(1, num_labels+ 1):
+                    label = v.get_noisy_label(label_id, worker_id)
+                    correlation[r][label_id-1] = label.val
+                r += 1
+        pca = sklearn.decomposition.PCA(n_components=num_labels, svd_solver='full')
+        pcaresult = pca.fit(correlation)
+        num_components = 0
+        explain = 0.0
+        for pos in range (0, num_labels):
+            explain += pcaresult.explained_variance_ratio_[pos]
+            if explain > 0.8:
+                num_components = pos+1
+                break
+        return num_components
