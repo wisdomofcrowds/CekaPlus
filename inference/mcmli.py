@@ -6,7 +6,7 @@ import random
 from core import data, samplable, utils
 from inference import model
 
-class MMLIWorker:
+class MCMLIWorker:
 
     def __init__(self, worker):
         self.worker = worker
@@ -19,7 +19,8 @@ class MMLIWorker:
         self.K = K
         for m in range(1, self.M + 1):
             pi = numpy.ndarray(shape=(self.K + 1, self.K + 1), dtype=samplable.RealV, order='C')
-            self.random_initialize_pi(pi, 0.7, 0.9)
+            #self.random_initialize_pi(pi, 0.6, 0.7)
+            self.initialize_pi(pi)
             self.pi_list.append(pi)
         #self.print_pis()
 
@@ -27,9 +28,9 @@ class MMLIWorker:
         for i in range(1, self.K + 1):
             for j in range(1, self.K + 1):
                 if i == j:
-                    pi[i][j] = samplable.RealV(0.9)
+                    pi[i][j] = samplable.RealV(0.8)
                 else:
-                    pi[i][j] = samplable.RealV(0.10 / (self.K - 1))
+                    pi[i][j] = samplable.RealV(0.2/ (self.K - 1))
 
     def random_initialize_pi(self, pi, diagonal_low, diagonal_high):
         # we get K diagonal elements randomly in the range of low - high
@@ -95,7 +96,7 @@ class MMLIWorker:
                 print('')
 
 
-class MMLIInstance:
+class MCMLIInstance:
 
     def __init__(self, inst):
         self.inst = inst
@@ -214,7 +215,7 @@ class MMLIInstance:
             print('')
 
 
-class MMLIModel(model.Model):
+class MCMLIModel(model.Model):
     """
     multi-label multi-class independent model
     """
