@@ -6,7 +6,7 @@ import random
 from core import data, samplable, utils
 from inference import model
 
-class MMLDWorker:
+class MCMLDWorker:
 
     def __init__(self, worker):
         self.worker = worker
@@ -24,7 +24,8 @@ class MMLDWorker:
             pi_list = [None]
             for m in range(1, self.M + 1):
                 pi = numpy.ndarray(shape=(self.K + 1, self.K + 1), dtype=samplable.RealV, order='C')
-                self.random_initialize_pi(pi, 0.7, 0.9)
+                #self.random_initialize_pi(pi, 0.6, 0.7)
+                self.initialize_pi(pi)
                 pi_list.append(pi)
             self.pi_dict.setdefault(r, pi_list)
         #self.print_pis()
@@ -33,9 +34,9 @@ class MMLDWorker:
         for i in range(1, self.K + 1):
             for j in range(1, self.K + 1):
                 if i == j:
-                    pi[i][j] = samplable.RealV(0.9)
+                    pi[i][j] = samplable.RealV(0.8)
                 else:
-                    pi[i][j] = samplable.RealV(0.10 / (self.K - 1))
+                    pi[i][j] = samplable.RealV(0.2 / (self.K - 1))
 
     def random_initialize_pi(self, pi, diagonal_low, diagonal_high):
         # we get K diagonal elements randomly in the range of low - high
@@ -104,7 +105,7 @@ class MMLDWorker:
                         self.pi_dict.get(r)[m][i][j].print_obj()
                     print('')
 
-class MMLDInstance:
+class MCMLDInstance:
 
     def __init__(self, inst):
         self.inst = inst
@@ -288,7 +289,7 @@ class MMLDInstance:
         print('')
 
 
-class MMLDModel(model.Model):
+class MCMLDModel(model.Model):
     """
     multi-label multi-class dependent model
     """
