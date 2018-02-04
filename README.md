@@ -16,4 +16,5 @@ Zero means an empty annotation.
 - format for *multi-label*  `instance_id` `label_id` `label_value`
 
 ## Algorithms
-1. **Majority Voting**
+1. **Multi-Class Multi-Label Independent (MCMLI)**
+2. **Multi-Class Multi-Label Dependent (MCMLD)**
