@@ -18,3 +18,7 @@ Zero means an empty annotation.
 ## Algorithms
 1. **Multi-Class Multi-Label Independent (MCMLI)**
 2. **Multi-Class Multi-Label Dependent (MCMLD)**
+
+## Contact
+Jing Zhang (Associate Professor at Nanjing University of Science and Technology, China)\
+Email: `jzhang@njust.edu.cn`

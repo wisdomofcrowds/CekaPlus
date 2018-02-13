@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# Multi-Class Multi-Label  Dependent Model (MCMLD)
+# @author: Jing Zhang (jzhang@njust.edu.cn)
 
 import numpy
 import math

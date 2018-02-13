@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# Multi-Class Multi-Label Independent Model (MCMLI)
+# @author: Jing Zhang (jzhang@njust.edu.cn)
 
 import numpy
 import math
