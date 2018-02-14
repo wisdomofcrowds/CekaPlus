@@ -5,13 +5,6 @@ CekaPlus is a tool for learning from crowds, focusing on more complicated learni
 - Multi-class multi-Label inference algorithms
 - Compatible with multi-class single-label inference
 
-
-> **Other related open source tools**
->> Some tools for *single-label* truth inference and learning:
->> - The first edition of Ceka is available [here](http://ceka.sourceforge.net).
->> - SQAURE (Statistical QUality Assurance Robustness Evaluation) is available [here](http://ir.ischool.utexas.edu/square/).
->> - Truth Inference in Crowdsourcing is available [here](https://zhydhkcws.github.io/crowd_truth_inference/index.html).
-
 ## Identifiers for Instances, Workers, Labels and Class Values
 All internal identifiers for instances, workers, labels and class values start from one.\
 Zero means an empty annotation.
@@ -37,3 +30,10 @@ For other *single-label* truth inference algorithm, refer to **Other related ope
 ## Contact
 Jing Zhang (Associate Professor at Nanjing University of Science and Technology, China)\
 Email: `jzhang@njust.edu.cn`
+
+> **Other related open source tools**
+>> Some tools for *single-label* truth inference and learning:
+>> - The first edition of Ceka is available [here](http://ceka.sourceforge.net).
+>> - SQAURE (Statistical QUality Assurance Robustness Evaluation) is available [here](http://ir.ischool.utexas.edu/square/).
+>> - Truth Inference in Crowdsourcing is available [here](https://zhydhkcws.github.io/crowd_truth_inference/index.html).
+
