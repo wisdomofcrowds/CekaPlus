@@ -276,7 +276,7 @@ class Dataset:
     def get_label_val_size(self, label_id):
         return len(self.label_info_dict[label_id])
 
-    def get_correlation_coefficient_by_PCA(self):
+    def get_num_explained_components_by_PCA(self, rho):
         row_num = 0
         for (k, v) in self.inst_dict.items():
             s = v.get_worker_id_set()
@@ -298,7 +298,7 @@ class Dataset:
         explain = 0.0
         for pos in range (0, num_labels):
             explain += pcaresult.explained_variance_ratio_[pos]
-            if explain > 0.8:
+            if (explain - rho) >= -0.05: # explain is around rho, the condition also satisfies
                 num_components = pos+1
                 break
         return num_components

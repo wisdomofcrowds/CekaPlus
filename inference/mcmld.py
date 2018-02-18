@@ -466,3 +466,24 @@ class MCMLDModel(model.Model):
                 for k in range(1, self.K + 1):
                     self.theta_dict.get(r)[m][k].print_obj()
                 print('')
+
+
+class MCMLDAlgo():
+
+    def __init__(self, rho, maxround):
+        self.rho = rho
+        self.maxround = maxround
+        self.mcmld_model = None
+        self.converge_rate = 0.005
+        self.soft = True
+
+    def infer(self, dataset):
+        R = dataset.get_num_explained_components_by_PCA(self.rho)
+        self.mcmld_model = MCMLDModel(R, 20)
+        omega = [None]
+        rlist = utils.gen_rand_sum_one(R)
+        for r in rlist:
+            omega.append(r)
+        self.mcmld_model.set_omega(omega)
+        self.mcmld_model.set_converge_rate(self.converge_rate)
+        self.mcmld_model.infer(dataset, self.soft)
