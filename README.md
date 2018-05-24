@@ -20,10 +20,12 @@ Zero means an empty annotation.
 ## Multi-Label Truth Inference Algorithms
 1. **Multi-Class Multi-Label Independent (MCMLI)**
 2. **Multi-Class Multi-Label Dependent (MCMLD)**
-3. **Majority Voting (MV, extended to multi-label scenario)**
-4. **Dawid and Skene's model (DS, extended to mulit-label scenario)**
-5. **Independent Bayesian Classifier Combination (iBCC, extended to mulit-label scenario)**
-6. **Multi-Class One-Coin model (MCOC, extended to multi-label scenario)**
+3. **Multi-Class Multi-Label Independent One-Coin model (MCMLI-OC)**
+4. **Multi-Class Multi-Label Dependent One-Coin model (MCMLD-OC)**
+5. **Majority Voting (MV, extended to multi-label scenario)**
+6. **Dawid and Skene's model (DS, extended to mulit-label scenario)**
+7. **Independent Bayesian Classifier Combination (iBCC, extended to mulit-label scenario)**
+8. **Multi-Class One-Coin model (MCOC, extended to multi-label scenario)**
 
 For other *single-label* truth inference algorithm, refer to **Other related open source tools**.
 
