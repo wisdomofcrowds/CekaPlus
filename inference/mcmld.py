@@ -337,11 +337,9 @@ class MCMLDModel(model.Model):
             self.theta_dict.setdefault(r, theta_list)
         # initialize omega
         if len(self.omega)==1:
-            omegas = numpy.ndarray(shape=(self.R + 1), dtype=samplable.RealV, order='C')
             vals = utils.gen_uniform_sum_one(self.R)
             for r in range(1, self.R + 1):
-                omegas[r] = samplable.RealV(vals[r - 1])
-            self.omega.append(omegas)
+                self.omega.append(samplable.RealV(vals[r - 1]))
 
     def set_omega(self, vals):
         for r in range(1, self.R + 1):
