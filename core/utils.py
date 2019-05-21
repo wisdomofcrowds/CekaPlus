@@ -16,6 +16,23 @@ def gen_rand_sum_one(size):
     lst2 = [x/sum for x in lst]
     return lst2
 
+
+def gen_uniform_sum_one(size):
+    """
+    generate size uniform numbers that sum up to one
+    :param size: number of uniform numbers
+    :return: list of numbers
+    """
+    lst = []
+    sum = 0
+    val = 1.0/size
+    for i in range(0, size-1):
+        lst.append(val)
+        sum += val
+    lst.append(1.0-sum)
+    return lst
+
+
 def exclusive_rand(exval, valset, size = 1):
     vallist = list()
     ret_list = list()
@@ -27,6 +44,7 @@ def exclusive_rand(exval, valset, size = 1):
     for pos in positions:
         ret_list.append(vallist[pos])
     return ret_list
+
 
 def rand_int_no_repeat(low, high, size):
     lst = list()
@@ -56,6 +74,7 @@ def rand_int_no_repeat(low, high, size):
                 lst.append(x[0])
         return  lst
 
+
 def get_max_index(vals, flag=False):
     maxindex = 1
     maxval = vals[1]
@@ -78,6 +97,7 @@ def get_max_index(vals, flag=False):
             maxindex = pos[x]
     return maxindex
 
+
 def get_full_combination(M, K):
     current = 0
     comb = []
@@ -88,6 +108,7 @@ def get_full_combination(M, K):
     full_combination(M, K, pos, comb, s)
     return comb
 
+
 def full_combination(m, K, pos, comb, s):
     if (m != 0):
         for i in range(1, K+1):
@@ -95,6 +116,7 @@ def full_combination(m, K, pos, comb, s):
             full_combination(m - 1, K, pos + 1, comb, s)
     else:
         comb.append(s.copy())
+
 
 def split_val_rand(val, n):
     """
@@ -108,6 +130,7 @@ def split_val_rand(val, n):
     for i in range (0, n):
         parts[i] = parts[i]*val/s
     return parts
+
 
 def gen_rand_sum_one_in_range(size, low, high, try_count=100000):
     """
