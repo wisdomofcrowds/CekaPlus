@@ -149,7 +149,7 @@ def gen_rand_sum_one_in_range(size, low, high, try_count=100000):
             r = numpy.random.uniform(low, high)
             sum += r
             lst.append(r)
-        remainder = 1 - sum;
+        remainder = 1 - sum
         if (remainder >= low) and (remainder <= high):
             lst.append(remainder)
             return lst
