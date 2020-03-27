@@ -63,12 +63,6 @@ print('MV acc: ' + str(eval.get_accuracy()) + ' subset acc: ' + str(eval.get_sub
 
 R=3
 ocld = inference.ocld.OCLDModel(R, maxround)
-omega = [None]
-rlist = core.utils.gen_rand_sum_one(R)
-print(rlist)
-for r in rlist:
-    omega.append(r)
-# ocld.set_omega(omega)
 ocld.set_converge_rate(0.005)
 ocld.infer(dataset, soft)
 
